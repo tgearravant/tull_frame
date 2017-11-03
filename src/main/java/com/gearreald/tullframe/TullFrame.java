@@ -5,7 +5,7 @@ package com.gearreald.tullframe;
  */
 public class TullFrame {
 	
-	public TullFrame(){
+	protected TullFrame(){
 		
 	}
 }

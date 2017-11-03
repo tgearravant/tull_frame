@@ -7,9 +7,9 @@ import java.util.HashMap;
 import com.gearreald.tullframe.Column;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 
-public class StringColumn extends Column {
+public class TimeColumn extends Column {
 	
-	HashMap<Integer, String> values;
+	HashMap<Integer, LocalDateTime> values;
 
 	@Override
 	public int getInt(int index) {
@@ -23,12 +23,12 @@ public class StringColumn extends Column {
 
 	@Override
 	public LocalDateTime getTime(int index) {
-		throw new ColumnTypeMismatchException("This is not a time column.");
+		return values.get(index);
 	}
 
 	@Override
 	public String getString(int index) {
-		return values.get(index);
+		throw new ColumnTypeMismatchException("This is not a string column.");
 	}
 
 	@Override

@@ -7,9 +7,9 @@ import java.util.HashMap;
 import com.gearreald.tullframe.Column;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 
-public class StringColumn extends Column {
+public class LongColumn extends Column {
 	
-	HashMap<Integer, String> values;
+	HashMap<Integer, Long> values;
 
 	@Override
 	public int getInt(int index) {
@@ -28,7 +28,7 @@ public class StringColumn extends Column {
 
 	@Override
 	public String getString(int index) {
-		return values.get(index);
+		throw new ColumnTypeMismatchException("This is not a string column.");
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class StringColumn extends Column {
 
 	@Override
 	public long getLong(int index) {
-		throw new ColumnTypeMismatchException("This is not a long column.");
+		return values.get(index);
 	}
 
 	@Override
