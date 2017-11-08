@@ -8,8 +8,11 @@ import org.junit.Test;
 
 public class TullFrameTest {
 
+	TullFrame frame;
+	
 	@Before
 	public void setUp() throws Exception {
+		frame = new TullFrameFactory().build();
 	}
 
 	@After

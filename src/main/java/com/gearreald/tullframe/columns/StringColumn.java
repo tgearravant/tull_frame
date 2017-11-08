@@ -2,14 +2,13 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.ArrayList;
 
-import com.gearreald.tullframe.Column;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 
 public class StringColumn extends Column {
 	
-	HashMap<Integer, String> values;
+	private ArrayList<String> values;
 
 	@Override
 	public int getInt(int index) {
@@ -44,10 +43,5 @@ public class StringColumn extends Column {
 	@Override
 	public Object getValue(int index) {
 		return values.get(index);
-	}
-	
-	@Override
-	public Iterable<Integer> getIndices() {
-		return values.keySet();
 	}
 }

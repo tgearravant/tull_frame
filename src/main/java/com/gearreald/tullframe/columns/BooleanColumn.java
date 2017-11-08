@@ -2,18 +2,17 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.ArrayList;
 
-import com.gearreald.tullframe.Column;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 
 public class BooleanColumn extends Column {
 	
-	HashMap<Integer, Integer> values;
+	private ArrayList<Boolean> values;
 
 	@Override
 	public int getInt(int index) {
-		return values.get(index);
+		throw new ColumnTypeMismatchException("This is not an integer column.");
 	}
 
 	@Override
@@ -33,7 +32,7 @@ public class BooleanColumn extends Column {
 
 	@Override
 	public boolean getBoolean(int index) {
-		throw new ColumnTypeMismatchException("This is not a boolean column.");
+		return values.get(index);
 	}
 
 	@Override
@@ -44,10 +43,5 @@ public class BooleanColumn extends Column {
 	@Override
 	public Object getValue(int index) {
 		return values.get(index);
-	}
-	
-	@Override
-	public Iterable<Integer> getIndices() {
-		return values.keySet();
 	}
 }
