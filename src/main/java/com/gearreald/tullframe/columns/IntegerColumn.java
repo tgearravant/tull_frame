@@ -1,47 +1,47 @@
 package com.gearreald.tullframe.columns;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
+import com.gearreald.tullframe.utils.ColumnType;
 
 public class IntegerColumn extends Column {
 	
-	private ArrayList<Integer> values;
+	private Map<Integer,Integer> values;
 
+	public IntegerColumn(){
+		values = new HashMap<Integer,Integer>();
+	}
+	
 	@Override
 	public int getInt(int index) {
 		return values.get(index);
 	}
 
 	@Override
-	public LocalDate getDate(int index) {
-		throw new ColumnTypeMismatchException("This is not a date column.");
-	}
-
-	@Override
-	public LocalDateTime getTime(int index) {
-		throw new ColumnTypeMismatchException("This is not a time column.");
-	}
-
-	@Override
-	public String getString(int index) {
-		throw new ColumnTypeMismatchException("This is not a string column.");
-	}
-
-	@Override
-	public boolean getBoolean(int index) {
-		throw new ColumnTypeMismatchException("This is not a boolean column.");
-	}
-
-	@Override
-	public long getLong(int index) {
-		throw new ColumnTypeMismatchException("This is not a long column.");
-	}
-
-	@Override
 	public Object getValue(int index) {
-		return values.get(index);
+		return getInt(index);
+	}
+	@Override
+	public void set(int index, String value){
+		try{
+			this.set(index, Integer.parseInt(value));
+		}catch (NumberFormatException e){
+			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not an int.", value, index), e);
+		}
+	}
+	@Override
+	public void set(int index, int value){
+		this.values.put(index, value);
+	}
+	@Override
+	protected Map<Integer, ? extends Object> getBackingMap() {
+		return values;
+	}
+
+	@Override
+	public ColumnType getColumnType() {
+		return ColumnType.INTEGER;
 	}
 }

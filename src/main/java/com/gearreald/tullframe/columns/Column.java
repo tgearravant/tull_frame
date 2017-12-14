@@ -2,21 +2,37 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
+import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
 public abstract class Column {
 	
 	public static final int QUICK_TYPE_VALUES = 5;
 
-	public abstract int getInt(int index);
-	public abstract LocalDate getDate(int index);
-	public abstract LocalDateTime getTime(int index);
-	public abstract String getString(int index);
-	public abstract boolean getBoolean(int index);
-	public abstract long getLong(int index);
-	public abstract double getDouble(int index);
+	public int getInt(int index){
+		throw new ColumnTypeMismatchException("This is not an integer column.");
+	}
+	public LocalDate getDate(int index){
+		throw new ColumnTypeMismatchException("This is not a date column.");
+	}
+	public LocalDateTime getTime(int index){
+		throw new ColumnTypeMismatchException("This is not a time column.");
+	}
+	public String getString(int index){
+		return this.getValue(index).toString();
+	}
+	public boolean getBoolean(int index){
+		throw new ColumnTypeMismatchException("This is not a boolean column.");
+	}
+	public long getLong(int index) {
+		throw new ColumnTypeMismatchException("This is not a long column.");
+	}
+	public double getDouble(int index){
+		throw new ColumnTypeMismatchException("This is not a double column.");
+	}
 	public abstract Object getValue(int index);
 	
 	public int optInt(int index){
@@ -76,34 +92,59 @@ public abstract class Column {
 		}
 	}
 	
-	public abstract void set(int index, int value);
-	public abstract void set(int index, double value);
-	public abstract void set(int index, boolean value);
-	public abstract void set(int index, LocalDate value);
-	public abstract void set(int index, LocalDateTime value);
-	public abstract void set(int index, long value);
-	public abstract void set(int index, String value);
-	public abstract void set(int index, Object value);
+	public void set(int index, int value){
+		throw new ColumnTypeMismatchException("This is not an integer column.");
+	}
+	public void set(int index, double value){
+		throw new ColumnTypeMismatchException("This is not a double column.");
+	}
+	public void set(int index, boolean value){
+		throw new ColumnTypeMismatchException("This is not a boolean column.");
+	}
+	public void set(int index, LocalDate value){
+		throw new ColumnTypeMismatchException("This is not a date column.");
+	}
+	public void set(int index, LocalDateTime value){
+		throw new ColumnTypeMismatchException("This is not a time column.");
+	}
+	public void set(int index, long value){
+		throw new ColumnTypeMismatchException("This is not a long column.");
+	}
+	public void set(int index, String value){
+		throw new ColumnTypeMismatchException("This is not a string column.");
+	}
+	public void set(int index, Object value){
+		set(index, value.toString());
+	}
 	
-	public abstract void add(int value);
-	public abstract void add(double value);
-	public abstract void add(boolean value);
-	public abstract void add(LocalDate value);
-	public abstract void add(LocalDateTime value);
-	public abstract void add(long value);
-	public abstract void add(String value);
-	public abstract void add(Object value);
+	protected abstract Map<Integer,? extends Object> getBackingMap(); 
 	
+	public Object removeIndex(int index){
+		return getBackingMap().remove(index);
+	}
 	
 	public ColumnType inferType(){
 		return ColumnType.STRING;
 	}
 	
+	public abstract ColumnType getColumnType();
+	
 	public static Column getColumnFromColumnType(ColumnType type){
-		if (type.equals(ColumnType.BOOLEAN)){
+		switch (type){
+		case BOOLEAN:
 			return new BooleanColumn();
-		}else{
+		case DATE:
+			return new DateColumn();
+		case TIME:
+			return new TimeColumn();
+		case LONG:
+			return new LongColumn();
+		case INTEGER:
+			return new IntegerColumn();
+		case STRING:
 			return new StringColumn();
+		default:
+			throw new UnimplementedException("ColumnType is unsupported.");
 		}
 	}
 }

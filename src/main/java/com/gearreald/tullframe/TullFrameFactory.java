@@ -1,17 +1,72 @@
 package com.gearreald.tullframe;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
+
+import com.gearreald.tullframe.exceptions.DataFrameException;
+import com.gearreald.tullframe.utils.ColumnType;
+import com.opencsv.CSVReader;
+
+import net.tullco.tullutils.FileUtils;
 
 public class TullFrameFactory {
 	
-	File csvFile;
-	ResultSet sqlResult;
+	private File csvFile;
+	private ResultSet sqlResult;
+	private String[] headers;
+	private ColumnType[] columnTypes;
 
 	public TullFrameFactory(){
 		
 	}
-	public TullFrame build(){
-		return new TullFrame();
+	public TullFrameFactory fromCSV(File f){
+		csvFile = f;
+		if(headers == null) {
+			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
+				headers = reader.readNext();
+			} catch (IOException e) {}
+		}
+		return this;
+	}
+	public TullFrameFactory fromSQL(ResultSet rs){
+		sqlResult = rs;
+		return this;
+	}
+	public TullFrameFactory setColumnHeaders(String[] headers){
+		this.headers = headers;
+		return this;
+	}
+	public TullFrameFactory setColumnTypes(){
+		return this;
+	}
+	public TullFrame build() {
+		if (headers != null && columnTypes != null){
+			if (headers.length != columnTypes.length){
+				throw new DataFrameException("The headers and the column types don't match up.");
+			}
+		}
+		TullFrame frame;
+		if(csvFile != null){
+			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
+				String[] headerRow = reader.readNext();
+				headers = (headers == null?headerRow:headers);
+			} catch (IOException e){}
+			frame = new TullFrame(headers, columnTypes);
+			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
+				String[] line;
+				while ((line = reader.readNext()) != null){
+					frame.addRow(line);
+				}
+			} catch (IOException e){}
+		}
+		else if(sqlResult == null){
+			frame = new TullFrame(headers, columnTypes);
+		}
+		else{
+			frame = new TullFrame(headers, columnTypes);
+		}
+		
+		return frame;
 	}
 }
