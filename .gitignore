@@ -4,7 +4,7 @@
 .classpath
 /bin/
 /build/
-runner.java
+Runner.java
 # Ignore Gradle GUI config
 gradle-app.setting
 

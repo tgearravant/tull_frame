@@ -1,8 +1,9 @@
 package com.gearreald.tullframe;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,9 @@ import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
 import com.gearreald.tullframe.exceptions.DataFrameException;
 import com.gearreald.tullframe.utils.ColumnType;
+import com.opencsv.CSVWriter;
+
+import net.tullco.tullutils.FileUtils;
 
 public class TullFrame {
 
@@ -19,12 +23,12 @@ public class TullFrame {
 	private List<Integer> indexes;
 	
 	protected TullFrame(){
-		columns = new LinkedHashMap<String, Column>();
-		columnNames = new ArrayList<String>();
-		currentIndex = 0;
 	}
 	protected TullFrame(String[] headers, ColumnType[] columnTypes){
-		super();
+		columns = new HashMap<String, Column>();
+		columnNames = new ArrayList<String>();
+		currentIndex = 0;
+		indexes = new ArrayList<Integer>();
 		for(int i = 0; i < headers.length; i++){
 			addEmptyColumn(headers[i], columnTypes[i]);
 		}
@@ -48,20 +52,32 @@ public class TullFrame {
 		if(valueArray.length != columns.size()){
 			throw new DataFrameException("The new row has the wrong number of elements.");
 		}
-		for(String colName: columns.keySet()){
-			Column col = columns.get(colName);
-			col.set(currentIndex,colName);
+		for(int i = 0; i < columnNames.size(); i++){
+			Column col = columns.get(columnNames.get(i));
+			col.set(currentIndex,valueArray[i]);
 		}
 		indexes.add(currentIndex);
 		currentIndex++;
 		
 	}
 	public int countRows(){
-		return 0;
+		return indexes.size();
 	}
 	public int countColumns(){
 		return columns.size();
 	}
-	public void toCsv(File f){
+	public void toCsv(File f) throws IOException{
+		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
+			String[] headers = columnNames.toArray(new String[0]); 
+			writer.writeNext(headers);
+			for(Integer i: indexes){
+				String[] row = new String[headers.length];
+				for (int j=0;j<headers.length;j++){
+					String columnName = columnNames.get(j); 
+					row[j] = columns.get(columnName).getString(i);
+				}
+				writer.writeNext(row);
+			}
+		}
 	}
 }

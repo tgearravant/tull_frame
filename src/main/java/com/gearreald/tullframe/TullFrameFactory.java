@@ -52,9 +52,16 @@ public class TullFrameFactory {
 				String[] headerRow = reader.readNext();
 				headers = (headers == null?headerRow:headers);
 			} catch (IOException e){}
+			if (columnTypes == null){
+				columnTypes = new ColumnType[headers.length];
+				for(int i=0; i< columnTypes.length; i++){
+					columnTypes[i] = ColumnType.STRING;
+				}
+			}
 			frame = new TullFrame(headers, columnTypes);
 			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
 				String[] line;
+				reader.readNext();
 				while ((line = reader.readNext()) != null){
 					frame.addRow(line);
 				}
