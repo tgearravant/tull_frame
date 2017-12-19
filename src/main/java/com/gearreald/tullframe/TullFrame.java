@@ -20,7 +20,7 @@ public class TullFrame {
 	private Map<String, Column> columns;
 	private List<String> columnNames;
 	private int currentIndex;
-	private List<Integer> indexes;
+	private List<Integer> indices;
 	
 	protected TullFrame(){
 	}
@@ -28,7 +28,7 @@ public class TullFrame {
 		columns = new HashMap<String, Column>();
 		columnNames = new ArrayList<String>();
 		currentIndex = 0;
-		indexes = new ArrayList<Integer>();
+		indices = new ArrayList<Integer>();
 		for(int i = 0; i < headers.length; i++){
 			addEmptyColumn(headers[i], columnTypes[i]);
 		}
@@ -56,12 +56,12 @@ public class TullFrame {
 			Column col = columns.get(columnNames.get(i));
 			col.set(currentIndex,valueArray[i]);
 		}
-		indexes.add(currentIndex);
+		indices.add(currentIndex);
 		currentIndex++;
 		
 	}
 	public int countRows(){
-		return indexes.size();
+		return indices.size();
 	}
 	public int countColumns(){
 		return columns.size();
@@ -70,7 +70,7 @@ public class TullFrame {
 		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
 			String[] headers = columnNames.toArray(new String[0]); 
 			writer.writeNext(headers);
-			for(Integer i: indexes){
+			for(Integer i: indices){
 				String[] row = new String[headers.length];
 				for (int j=0;j<headers.length;j++){
 					String columnName = columnNames.get(j); 
