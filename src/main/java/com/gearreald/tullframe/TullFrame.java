@@ -2,8 +2,10 @@ package com.gearreald.tullframe;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +17,9 @@ import com.opencsv.CSVWriter;
 
 import net.tullco.tullutils.FileUtils;
 
-public class TullFrame {
+public class TullFrame implements Iterable<Row>, Serializable {
 
+	private static final long serialVersionUID = 5681357572939610351L;
 	private Map<String, Column> columns;
 	private List<String> columnNames;
 	private int currentIndex;
@@ -39,6 +42,9 @@ public class TullFrame {
 	protected void addColumn(String name, Column c){
 		columns.put(name, c);
 		columnNames.add(name);
+	}
+	protected Row getRow(int index){
+		return null;
 	}
 	protected void initializeStringColumns(String[] names){
 		columns.clear();
@@ -79,5 +85,23 @@ public class TullFrame {
 				writer.writeNext(row);
 			}
 		}
+	}
+	@Override
+	public Iterator<Row> iterator() {
+		Iterator<Row> i = new Iterator<Row>(){
+
+			private Iterator<Integer> internalIterator = indices.iterator();
+			@Override
+			public boolean hasNext() {
+				return internalIterator.hasNext();
+			}
+
+			@Override
+			public Row next() {
+				return getRow(internalIterator.next());
+			}
+				
+		};
+		return i;
 	}
 }

@@ -2,7 +2,7 @@ package com.gearreald.tullframe;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
+import java.sql.Connection;
 
 import com.gearreald.tullframe.exceptions.DataFrameException;
 import com.gearreald.tullframe.utils.ColumnType;
@@ -13,8 +13,9 @@ import net.tullco.tullutils.FileUtils;
 public class TullFrameFactory {
 	
 	private File csvFile;
-	private ResultSet sqlResult;
 	private String[] headers;
+	private Connection conn;
+	private String sqlStatement;
 	private ColumnType[] columnTypes;
 
 	public TullFrameFactory(){
@@ -29,8 +30,9 @@ public class TullFrameFactory {
 		}
 		return this;
 	}
-	public TullFrameFactory fromSQL(ResultSet rs){
-		sqlResult = rs;
+	public TullFrameFactory fromSQL(Connection conn, String statement){
+		this.conn = conn;
+		this.sqlStatement = statement;
 		return this;
 	}
 	public TullFrameFactory setColumnHeaders(String[] headers){
@@ -67,7 +69,7 @@ public class TullFrameFactory {
 				}
 			} catch (IOException e){}
 		}
-		else if(sqlResult == null){
+		else if(conn != null && sqlStatement != null){
 			frame = new TullFrame(headers, columnTypes);
 		}
 		else{

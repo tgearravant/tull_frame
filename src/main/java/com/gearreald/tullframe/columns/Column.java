@@ -2,6 +2,7 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
@@ -124,7 +125,74 @@ public abstract class Column {
 	}
 	
 	public ColumnType inferType(){
-		return ColumnType.STRING;
+		boolean isBool = true;
+		boolean isDate = true;
+		boolean isTime = true;
+		boolean isInt = true;
+		boolean isLong = true;
+		boolean hasNonNullValues = false;
+		
+		if (this.getColumnType().equals(ColumnType.STRING))
+			return this.getColumnType();
+		
+		Map<Integer, ? extends Object> valueMap = getBackingMap();
+		for(int i: valueMap.keySet()){
+			Object o = valueMap.get(i);
+			hasNonNullValues = true;
+			if (o == null){				
+				continue;
+			}
+			hasNonNullValues = true;
+			String value = o.toString();
+			if(!isLong){
+				try{
+					long l = Long.parseLong(value);
+					if (l > Integer.MAX_VALUE) {
+						isInt = false;
+					}
+				}catch(NumberFormatException e){
+					isLong = false;
+					isInt = false;
+				}
+			}if(!isDate){
+				try{
+					LocalDate.parse(value);
+				}catch(DateTimeParseException e){
+					isDate = false;
+				}
+			}if(!isTime){
+				try{
+					LocalDateTime.parse(value);
+				}catch(DateTimeParseException e){
+					isTime = false;
+				}
+			}
+			if(booleanAdder(isBool, isDate, isTime, isInt, isLong) == 0)
+				break;
+		}
+		if(!hasNonNullValues){
+			return ColumnType.STRING;
+		}else if(isTime){
+			return ColumnType.TIME;
+		}else if(isDate){
+			return ColumnType.DATE;
+		}else if(isInt){
+			return ColumnType.INTEGER;
+		}else if(isLong){
+			return ColumnType.LONG;
+		}else if(isBool){
+			return ColumnType.BOOLEAN;
+		}else{
+			return ColumnType.STRING;
+		}
+	}
+	private int booleanAdder(boolean... bs){
+		int currentCount = 0;
+		for(boolean b: bs){
+			if(b)
+				currentCount++;
+		}
+		return currentCount;
 	}
 	
 	public abstract ColumnType getColumnType();
@@ -144,7 +212,7 @@ public abstract class Column {
 		case STRING:
 			return new StringColumn();
 		default:
-			throw new UnimplementedException("ColumnType is unsupported.");
+			throw new UnimplementedException("ColumnType is unsupported. I honestly have no idea how you got this error... I'd love to know, though. :)");
 		}
 	}
 }
