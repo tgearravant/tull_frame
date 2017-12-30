@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
 
+import com.gearreald.tullframe.exceptions.BooleanParseException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
@@ -145,7 +146,7 @@ public abstract class Column {
 			}
 			hasNonNullValues = true;
 			String value = o.toString();
-			if(!isLong){
+			if(isLong){
 				try{
 					long l = Long.parseLong(value);
 					if (l > Integer.MAX_VALUE) {
@@ -156,24 +157,30 @@ public abstract class Column {
 					isInt = false;
 				}
 			}
-			if(!isDouble){
+			if(isDouble){
 				try{
 					Double.parseDouble(value);
 				}catch(NumberFormatException e){
 					isDouble = false;
 				}
 			}
-			if(!isDate){
+			if(isDate){
 				try{
 					LocalDate.parse(value);
 				}catch(DateTimeParseException e){
 					isDate = false;
 				}
-			}if(!isTime){
+			}if(isTime){
 				try{
 					LocalDateTime.parse(value);
 				}catch(DateTimeParseException e){
 					isTime = false;
+				}
+			}if(isBool){
+				try{
+					BooleanColumn.parseBoolean(value);
+				} catch (BooleanParseException e) {
+					isBool = false;
 				}
 			}
 			if(booleanAdder(isBool, isDate, isTime, isInt, isLong, isDouble) == 0)

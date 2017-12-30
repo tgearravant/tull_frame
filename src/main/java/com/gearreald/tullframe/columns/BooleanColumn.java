@@ -3,8 +3,8 @@ package com.gearreald.tullframe.columns;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gearreald.tullframe.exceptions.BooleanParseException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
-import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
 public class BooleanColumn extends Column {
@@ -29,8 +29,8 @@ public class BooleanColumn extends Column {
 	public void set(int index, String value){
 		try{
 			this.set(index, parseBoolean(value));
-		}catch(UnimplementedException e){
-			throw new ColumnTypeMismatchException(String.format("The value %s is not a boolean.", value));
+		}catch(BooleanParseException e){
+			throw new ColumnTypeMismatchException(String.format("The value %s is not a boolean.", value), e);
 		}
 	}
 	@Override
@@ -45,7 +45,7 @@ public class BooleanColumn extends Column {
 	public ColumnType getColumnType() {
 		return ColumnType.BOOLEAN;
 	}
-	protected static boolean parseBoolean(String value){
+	protected static boolean parseBoolean(String value) throws BooleanParseException{
 		for(String s: POTENTIAL_TRUE_VALUES){
 			if (value.toLowerCase().equals(s)){
 				return true;
@@ -56,6 +56,6 @@ public class BooleanColumn extends Column {
 				return false;
 			}
 		}
-		throw new UnimplementedException();
+		throw new BooleanParseException();
 	}
 }

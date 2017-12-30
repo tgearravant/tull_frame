@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.exceptions.ColumnNameException;
+import com.gearreald.tullframe.utils.ColumnType;
 
 public class Row {
 	private int index;
@@ -45,6 +46,14 @@ public class Row {
 	public double getDouble(String columnName){
 		throwIfNoKey(columnName);
 		return columns.get(columnName).getDouble(index);
+	}
+	public ColumnType getColumnType(String columnName){
+		throwIfNoKey(columnName);
+		return columns.get(columnName).getColumnType();
+	}
+	protected Column getColumn(String columnName){
+		throwIfNoKey(columnName);
+		return columns.get(columnName);
 	}
 	private void throwIfNoKey(String columnName){
 		if (!columnNames.contains(columnName))

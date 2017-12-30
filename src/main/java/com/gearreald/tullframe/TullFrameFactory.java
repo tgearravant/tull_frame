@@ -45,7 +45,8 @@ public class TullFrameFactory {
 		this.headers = headers;
 		return this;
 	}
-	public TullFrameFactory setColumnTypes(){
+	public TullFrameFactory setColumnTypes(ColumnType[] columnTypes){
+		this.columnTypes = columnTypes;
 		return this;
 	}
 	public TullFrame build() {

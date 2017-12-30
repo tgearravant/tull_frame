@@ -25,8 +25,6 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	private int currentIndex;
 	private List<Integer> indices;
 	
-	protected TullFrame(){
-	}
 	protected TullFrame(String[] headers, ColumnType[] columnTypes){
 		columns = new HashMap<String, Column>();
 		columnNames = new ArrayList<String>();
@@ -76,6 +74,9 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	}
 	public List<String> getColumnNames(){
 		return this.columnNames;
+	}
+	public Column getColumn(String columnName){
+		return this.columns.get(columnName);
 	}
 	public int countColumns(){
 		return columns.size();
