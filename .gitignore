@@ -4,7 +4,10 @@
 .classpath
 /bin/
 /build/
+
+#Ignorable Debug Files
 Runner.java
+
 # Ignore Gradle GUI config
 gradle-app.setting
 

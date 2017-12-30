@@ -130,6 +130,7 @@ public abstract class Column {
 		boolean isTime = true;
 		boolean isInt = true;
 		boolean isLong = true;
+		boolean isDouble = true;
 		boolean hasNonNullValues = false;
 		
 		if (this.getColumnType().equals(ColumnType.STRING))
@@ -154,7 +155,15 @@ public abstract class Column {
 					isLong = false;
 					isInt = false;
 				}
-			}if(!isDate){
+			}
+			if(!isDouble){
+				try{
+					Double.parseDouble(value);
+				}catch(NumberFormatException e){
+					isDouble = false;
+				}
+			}
+			if(!isDate){
 				try{
 					LocalDate.parse(value);
 				}catch(DateTimeParseException e){
@@ -167,7 +176,7 @@ public abstract class Column {
 					isTime = false;
 				}
 			}
-			if(booleanAdder(isBool, isDate, isTime, isInt, isLong) == 0)
+			if(booleanAdder(isBool, isDate, isTime, isInt, isLong, isDouble) == 0)
 				break;
 		}
 		if(!hasNonNullValues){
@@ -180,13 +189,15 @@ public abstract class Column {
 			return ColumnType.INTEGER;
 		}else if(isLong){
 			return ColumnType.LONG;
+		}else if(isDouble){
+			return ColumnType.DOUBLE;
 		}else if(isBool){
 			return ColumnType.BOOLEAN;
 		}else{
 			return ColumnType.STRING;
 		}
 	}
-	private int booleanAdder(boolean... bs){
+	private static int booleanAdder(boolean... bs){
 		int currentCount = 0;
 		for(boolean b: bs){
 			if(b)
@@ -209,6 +220,8 @@ public abstract class Column {
 			return new LongColumn();
 		case INTEGER:
 			return new IntegerColumn();
+		case DOUBLE:
+			return new DoubleColumn();
 		case STRING:
 			return new StringColumn();
 		default:

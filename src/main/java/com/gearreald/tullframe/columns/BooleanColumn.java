@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
+import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
 public class BooleanColumn extends Column {
 	
-	String[] POTENTIAL_TRUE_VALUES = {"true","t","1","y","yes"};
-	String[] POTENTIAL_FALSE_VALUES = {"false","f","0","n","no"};
+	private final static String[] POTENTIAL_TRUE_VALUES = {"true","t","1","y","yes"};
+	private final static String[] POTENTIAL_FALSE_VALUES = {"false","f","0","n","no"};
 	
 	private Map<Integer,Boolean> values;
 
@@ -26,22 +27,9 @@ public class BooleanColumn extends Column {
 	}
 	@Override
 	public void set(int index, String value){
-		boolean matched = false;
-		for(String s: POTENTIAL_TRUE_VALUES){
-			if (value.toLowerCase().equals(s) && !matched){
-				this.set(index, true);
-				matched = true;
-				break;
-			}
-		}
-		for(String s: POTENTIAL_FALSE_VALUES){
-			if (value.toLowerCase().equals(s) && !matched){
-				this.set(index, false);
-				matched = true;
-				break;
-			}
-		}
-		if(!matched){
+		try{
+			this.set(index, parseBoolean(value));
+		}catch(UnimplementedException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s is not a boolean.", value));
 		}
 	}
@@ -56,5 +44,18 @@ public class BooleanColumn extends Column {
 	@Override
 	public ColumnType getColumnType() {
 		return ColumnType.BOOLEAN;
+	}
+	protected static boolean parseBoolean(String value){
+		for(String s: POTENTIAL_TRUE_VALUES){
+			if (value.toLowerCase().equals(s)){
+				return true;
+			}
+		}
+		for(String s: POTENTIAL_FALSE_VALUES){
+			if (value.toLowerCase().equals(s)){
+				return false;
+			}
+		}
+		throw new UnimplementedException();
 	}
 }

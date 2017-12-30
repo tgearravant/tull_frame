@@ -11,7 +11,7 @@ import java.util.Map;
 
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
-import com.gearreald.tullframe.exceptions.DataFrameException;
+import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.utils.ColumnType;
 import com.opencsv.CSVWriter;
 
@@ -44,7 +44,9 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		columnNames.add(name);
 	}
 	protected Row getRow(int index){
-		return null;
+		if(!indices.contains(index))
+			throw new TullFrameException("Index does not exist");
+		return new Row(index, this.columns, this.columnNames);
 	}
 	protected void initializeStringColumns(String[] names){
 		columns.clear();
@@ -56,7 +58,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	}
 	public void addRow(String[] valueArray){
 		if(valueArray.length != columns.size()){
-			throw new DataFrameException("The new row has the wrong number of elements.");
+			throw new TullFrameException("The new row has the wrong number of elements.");
 		}
 		for(int i = 0; i < columnNames.size(); i++){
 			Column col = columns.get(columnNames.get(i));
@@ -66,8 +68,14 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		currentIndex++;
 		
 	}
-	public int countRows(){
+	public int size(){
 		return indices.size();
+	}
+	public int rowCount(){
+		return size();
+	}
+	public List<String> getColumnNames(){
+		return this.columnNames;
 	}
 	public int countColumns(){
 		return columns.size();

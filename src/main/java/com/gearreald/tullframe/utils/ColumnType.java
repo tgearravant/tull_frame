@@ -6,5 +6,6 @@ public enum ColumnType {
 	INTEGER,
 	BOOLEAN,
 	LONG,
-	STRING
+	STRING,
+	DOUBLE
 }

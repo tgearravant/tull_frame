@@ -1,6 +1,6 @@
 package com.gearreald.tullframe.exceptions;
 
-public class UnimplementedException extends RuntimeException {
+public class UnimplementedException extends UnsupportedOperationException {
 
 	private static final long serialVersionUID = -2150466734520998179L;
 	

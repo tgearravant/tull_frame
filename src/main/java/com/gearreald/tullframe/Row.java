@@ -42,6 +42,10 @@ public class Row {
 		throwIfNoKey(columnName);
 		return columns.get(columnName).getLong(index);
 	}
+	public double getDouble(String columnName){
+		throwIfNoKey(columnName);
+		return columns.get(columnName).getDouble(index);
+	}
 	private void throwIfNoKey(String columnName){
 		if (!columnNames.contains(columnName))
 			throw new ColumnNameException("The key " + columnName + " is not in the dataframe.");
