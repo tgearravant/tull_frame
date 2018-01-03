@@ -2,6 +2,7 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
@@ -11,6 +12,10 @@ public class DateColumn extends Column {
 	
 	private Map<Integer, LocalDate> values;
 
+	public DateColumn(){
+		values = new HashMap<Integer, LocalDate>();
+	}
+	
 	@Override
 	public LocalDate getDate(int index) {
 		return values.get(index);

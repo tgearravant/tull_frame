@@ -3,12 +3,21 @@ package com.gearreald.tullframe;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.gearreald.tullframe.column_adders.BooleanColumnAdder;
+import com.gearreald.tullframe.column_adders.DateColumnAdder;
+import com.gearreald.tullframe.column_adders.DoubleColumnAdder;
+import com.gearreald.tullframe.column_adders.IntColumnAdder;
+import com.gearreald.tullframe.column_adders.LongColumnAdder;
+import com.gearreald.tullframe.column_adders.StringColumnAdder;
+import com.gearreald.tullframe.column_adders.TimeColumnAdder;
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
 import com.gearreald.tullframe.exceptions.TullFrameException;
@@ -34,12 +43,23 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			addEmptyColumn(headers[i], columnTypes[i]);
 		}
 	}
-	protected void addEmptyColumn(String name, ColumnType type){
-		addColumn(name, Column.getColumnFromColumnType(type));
+	public Column addEmptyColumn(String name, ColumnType type){
+		Column c = Column.getColumnFromColumnType(type);
+		addColumn(name, c);
+		return c;
 	}
 	protected void addColumn(String name, Column c){
 		columns.put(name, c);
 		columnNames.add(name);
+	}
+	public Column removeColumn(String columnName){
+		this.columnNames.remove(columnName);
+		return this.columns.remove(columnName);
+	}
+	public void removeRow(int index){
+		for(String columnName: columnNames){
+			this.columns.get(columnName).removeIndex(index);
+		}
 	}
 	protected Row getRow(int index){
 		if(!indices.contains(index))
@@ -93,6 +113,97 @@ public class TullFrame implements Iterable<Row>, Serializable {
 				}
 				writer.writeNext(row);
 			}
+		}
+	}
+	public void addNewIntegerColumn(String columnName, IntColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.INTEGER);
+		for(Row r: this){
+			int index = r.getIndex();
+			Integer newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewLongColumn(String columnName, LongColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.LONG);
+		for(Row r: this){
+			int index = r.getIndex();
+			Long newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewDoubleColumn(String columnName, DoubleColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.DOUBLE);
+		for(Row r: this){
+			int index = r.getIndex();
+			Double newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewDateColumn(String columnName, DateColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.DATE);
+		for(Row r: this){
+			int index = r.getIndex();
+			LocalDate newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewTimeColumn(String columnName, TimeColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.TIME);
+		for(Row r: this){
+			int index = r.getIndex();
+			LocalDateTime newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewBooleanColumn(String columnName, BooleanColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.BOOLEAN);
+		for(Row r: this){
+			int index = r.getIndex();
+			Boolean newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewStringColumn(String columnName, StringColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.STRING);
+		for(Row r: this){
+			int index = r.getIndex();
+			String newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
 		}
 	}
 	@Override

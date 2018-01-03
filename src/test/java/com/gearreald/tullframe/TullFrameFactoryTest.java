@@ -134,8 +134,12 @@ public class TullFrameFactoryTest {
 		assertEquals("Kenaii",r.getString("person_first"));
 		assertEquals("Kruda",r.getString("person_last"));
 		try{
-			assertEquals(3,r.getString("id"));
-			fail("Didn't throw an exception on the default column name");
+			frame.getRow(3);
+			fail("Getting a non-existant row didn't throw an exception!");
+		}catch(TullFrameException e){}
+		try{
+			frame.getRow(2).getInt("id");
+			fail("The wrong data type didn't throw an exception!");
 		}catch(ColumnNameException e){}
 	}
 }

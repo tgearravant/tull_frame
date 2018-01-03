@@ -19,6 +19,9 @@ public class Row {
 		this.columns = columns;
 		this.columnNames = columnNames;
 	}
+	protected int getIndex(){
+		return this.index;
+	}
 	public int getInt(String columnName){
 		throwIfNoKey(columnName);
 		return columns.get(columnName).getInt(index);

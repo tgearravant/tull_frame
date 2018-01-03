@@ -69,6 +69,10 @@ public class TullFrameFactory {
 				frame = new TullFrame(headers, columnTypes);
 				String[] line;
 				while ((line = reader.readNext()) != null){
+					for(int i = 0; i < line.length; i++){
+						if(line[i].equals(""))
+							line[i] = null;
+					}
 					frame.addRow(line);
 				}
 			} catch (IOException e){
