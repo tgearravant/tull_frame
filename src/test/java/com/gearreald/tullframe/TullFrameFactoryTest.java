@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import com.gearreald.tullframe.exceptions.ColumnNameException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
-import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.utils.ColumnType;
 
 import net.tullco.tullutils.ResourceUtils;
@@ -83,6 +82,35 @@ public class TullFrameFactoryTest {
 	}
 	
 	@Test
+	public void testCopy() {
+		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
+		String[] headers = {"person_id", "person_first","person_last"};
+		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
+		TullFrame originalFrame = new TullFrameFactory().fromCSV(f).setColumnHeaders(headers).setColumnTypes(columnTypes).build();
+		TullFrame frame = new TullFrameFactory().fromTullFrame(originalFrame).build();
+		assertEquals(3, frame.size());
+		assertEquals("person_id", frame.getColumnNames().get(0));
+		assertEquals("person_first", frame.getColumnNames().get(1));
+		assertEquals("person_last", frame.getColumnNames().get(2));
+		Row r = frame.getRow(0);
+		assertEquals(1,r.getInt("person_id"));
+		assertEquals("Rondi",r.getString("person_first"));
+		assertEquals("Hargi",r.getString("person_last"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("person_id"));
+		assertEquals("Kroni",r.getString("person_first"));
+		assertEquals("Banthua",r.getString("person_last"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("person_id"));
+		assertEquals("Kenaii",r.getString("person_first"));
+		assertEquals("Kruda",r.getString("person_last"));
+		try{
+			assertEquals(3,r.getInt("id"));
+			fail("Didn't throw an exception on the default column name");
+		}catch(ColumnNameException e){}
+	}
+	
+	@Test
 	public void testSQLLoad() throws SQLException, ClassNotFoundException{
 		String jdbcURL = "jdbc:sqlite:" + ResourceUtils.getAbsoluteResourcePath(TullFrameFactoryTest.class, "db/test.db");
 		Class.forName("org.sqlite.JDBC");
@@ -106,7 +134,7 @@ public class TullFrameFactoryTest {
 		try{
 			r = frame.getRow(3);
 			fail("Getting a non-existant row didn't throw an exception!");
-		}catch(TullFrameException e){}
+		}catch(IndexOutOfBoundsException e){}
 	}
 	@Test
 	public void testSQLLoadWithHeadersAndTypes() throws SQLException, ClassNotFoundException {
@@ -136,7 +164,7 @@ public class TullFrameFactoryTest {
 		try{
 			frame.getRow(3);
 			fail("Getting a non-existant row didn't throw an exception!");
-		}catch(TullFrameException e){}
+		}catch(IndexOutOfBoundsException e){}
 		try{
 			frame.getRow(2).getInt("id");
 			fail("The wrong data type didn't throw an exception!");

@@ -11,13 +11,18 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class Row {
 	private int index;
+	private TullFrame parentFrame;
 	private Map<String,Column> columns;
 	private List<String> columnNames;
 	
-	protected Row(int index, Map<String,Column> columns, List<String> columnNames){
+	protected Row(int index, Map<String,Column> columns, List<String> columnNames, TullFrame parentFrame){
 		this.index = index;
 		this.columns = columns;
 		this.columnNames = columnNames;
+		this.parentFrame = parentFrame;
+	}
+	public int getRowNumber(){
+		return parentFrame.indexToRowNum(index);
 	}
 	protected int getIndex(){
 		return this.index;
@@ -57,6 +62,13 @@ public class Row {
 	protected Column getColumn(String columnName){
 		throwIfNoKey(columnName);
 		return columns.get(columnName);
+	}
+	protected String[] toStringArray(){
+		String[] values = new String[columnNames.size()];
+		for(int i = 0; i < values.length; i++){
+			values[i] = columns.get(columnNames.get(i)).getString(index);
+		}
+		return values;
 	}
 	private void throwIfNoKey(String columnName){
 		if (!columnNames.contains(columnName))

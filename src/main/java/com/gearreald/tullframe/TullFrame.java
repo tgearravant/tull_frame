@@ -7,20 +7,23 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.gearreald.tullframe.column_adders.BooleanColumnAdder;
-import com.gearreald.tullframe.column_adders.DateColumnAdder;
-import com.gearreald.tullframe.column_adders.DoubleColumnAdder;
-import com.gearreald.tullframe.column_adders.IntColumnAdder;
-import com.gearreald.tullframe.column_adders.LongColumnAdder;
-import com.gearreald.tullframe.column_adders.StringColumnAdder;
-import com.gearreald.tullframe.column_adders.TimeColumnAdder;
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
 import com.gearreald.tullframe.exceptions.TullFrameException;
+import com.gearreald.tullframe.interfaces.Filter;
+import com.gearreald.tullframe.interfaces.column_adders.BooleanColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.DateColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.DoubleColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.IntColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.LongColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.StringColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.TimeColumnAdder;
 import com.gearreald.tullframe.utils.ColumnType;
 import com.opencsv.CSVWriter;
 
@@ -32,17 +35,25 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	private Map<String, Column> columns;
 	private List<String> columnNames;
 	private int currentIndex;
-	private List<Integer> indices;
+	private List<Integer> indexList;
+	private Set<Integer> indexSet;
 	
 	protected TullFrame(String[] headers, ColumnType[] columnTypes){
 		columns = new HashMap<String, Column>();
 		columnNames = new ArrayList<String>();
+		indexSet = new HashSet<Integer>();
 		currentIndex = 0;
-		indices = new ArrayList<Integer>();
+		indexList = new ArrayList<Integer>();
 		for(int i = 0; i < headers.length; i++){
 			addEmptyColumn(headers[i], columnTypes[i]);
 		}
 	}
+	/**
+	 * Adds an empty column of the given type to the end of the dataframe.
+	 * @param name The name of the new empty column
+	 * @param type The type of the new empty column (i.e. ColumnType.STRING)
+	 * @return The newly added column
+	 */
 	public Column addEmptyColumn(String name, ColumnType type){
 		Column c = Column.getColumnFromColumnType(type);
 		addColumn(name, c);
@@ -52,19 +63,46 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		columns.put(name, c);
 		columnNames.add(name);
 	}
+	/**
+	 * Removes the given column from the data frame.
+	 * @param columnName The name of the column to remove.
+	 * @return The column that was removed.
+	 */
 	public Column removeColumn(String columnName){
 		this.columnNames.remove(columnName);
 		return this.columns.remove(columnName);
 	}
-	public void removeRow(int index){
+	/**
+	 * Removes the given row from the dataframe.
+	 * @param rowNum The row number of the row to remove.
+	 */
+	public void removeRow(int rowNum){
+		removeRowAtIndex(rowNumToIndex(rowNum));
+	}
+	/**
+	 * Removes the row from the data frame.
+	 * @param r The row object you want removed.
+	 * Please make sure that it's actually a row object from this data frame otherwise you may get unpredictable behavior.
+	 */
+	public void removeRow(Row r){
+		removeRowAtIndex(r.getIndex());
+	}
+	private void removeRowAtIndex(int index){
+		this.indexList.remove(index);
 		for(String columnName: columnNames){
 			this.columns.get(columnName).removeIndex(index);
 		}
 	}
-	protected Row getRow(int index){
-		if(!indices.contains(index))
-			throw new TullFrameException("Index does not exist");
-		return new Row(index, this.columns, this.columnNames);
+	protected int rowNumToIndex(int rowNum){
+		return this.indexList.get(rowNum);
+	}
+	protected int indexToRowNum(int index){
+		if(!indexSet.contains(index))
+			throw new TullFrameException("Somehow, you've gotten an invalid index. This is likely a bug. It's probably not your fault. This time O:)");
+		return indexList.indexOf(index);
+	}
+	protected Row getRow(int rowNum){
+		return new Row(rowNumToIndex(rowNum), this.columns, this.columnNames, this);
 	}
 	protected void initializeStringColumns(String[] names){
 		columns.clear();
@@ -74,6 +112,9 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			columnNames.add(name);
 		}
 	}
+	public void addRow(List<String> valueList){
+		addRow(valueList.toArray(new String[0]));
+	}
 	public void addRow(String[] valueArray){
 		if(valueArray.length != columns.size()){
 			throw new TullFrameException("The new row has the wrong number of elements.");
@@ -82,18 +123,38 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			Column col = columns.get(columnNames.get(i));
 			col.set(currentIndex,valueArray[i]);
 		}
-		indices.add(currentIndex);
+		indexList.add(currentIndex);
+		indexSet.add(currentIndex);
 		currentIndex++;
 		
 	}
 	public int size(){
-		return indices.size();
+		return indexList.size();
+	}
+	public void filterRows(Filter... filters){
+		List<Integer> indexesToRemove = new ArrayList<Integer>();
+		for(Row r: this){
+			for(Filter f: filters){
+				if(!f.condition(r))
+					indexesToRemove.add(r.getIndex());
+			}
+		}
+		for(int i: indexesToRemove){
+			this.removeRowAtIndex(i);
+		}
 	}
 	public int rowCount(){
 		return size();
 	}
 	public List<String> getColumnNames(){
 		return this.columnNames;
+	}
+	public List<ColumnType> getColumnTypes(){
+		List<ColumnType> types = new ArrayList<ColumnType>();
+		for (String s: columnNames){
+			types.add(this.getColumn(s).getColumnType());
+		}
+		return types;
 	}
 	public Column getColumn(String columnName){
 		return this.columns.get(columnName);
@@ -105,7 +166,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
 			String[] headers = columnNames.toArray(new String[0]); 
 			writer.writeNext(headers);
-			for(Integer i: indices){
+			for(Integer i: indexList){
 				String[] row = new String[headers.length];
 				for (int j=0;j<headers.length;j++){
 					String columnName = columnNames.get(j); 
@@ -210,7 +271,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public Iterator<Row> iterator() {
 		Iterator<Row> i = new Iterator<Row>(){
 
-			private Iterator<Integer> internalIterator = indices.iterator();
+			private Iterator<Integer> internalIterator = indexList.iterator();
 			@Override
 			public boolean hasNext() {
 				return internalIterator.hasNext();

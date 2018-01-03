@@ -1,4 +1,4 @@
-package com.gearreald.tullframe.column_adders;
+package com.gearreald.tullframe.interfaces.column_adders;
 
 import java.time.LocalDate;
 

@@ -8,23 +8,23 @@ import java.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gearreald.tullframe.column_adders.BooleanColumnAdder;
-import com.gearreald.tullframe.column_adders.DateColumnAdder;
-import com.gearreald.tullframe.column_adders.DoubleColumnAdder;
-import com.gearreald.tullframe.column_adders.IntColumnAdder;
-import com.gearreald.tullframe.column_adders.LongColumnAdder;
-import com.gearreald.tullframe.column_adders.StringColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.BooleanColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.DateColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.DoubleColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.IntColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.LongColumnAdder;
+import com.gearreald.tullframe.interfaces.column_adders.StringColumnAdder;
 import com.gearreald.tullframe.utils.ColumnType;
 
 import net.tullco.tullutils.ResourceUtils;
 
-public class TullFrameTest {
+public class ColumnAdderTest {
 
 	private TullFrame frame;
 	
 	@Before
 	public void setUp() throws Exception {
-		File f = (ResourceUtils.getResourceFile(TullFrameTest.class, "csv/testSheet.csv"));
+		File f = (ResourceUtils.getResourceFile(ColumnAdderTest.class, "csv/testSheet.csv"));
 		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
 		frame = new TullFrameFactory().fromCSV(f).setColumnTypes(columnTypes).build();
 	}

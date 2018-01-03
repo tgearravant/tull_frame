@@ -22,6 +22,7 @@ public class TullFrameFactory {
 	private Connection conn;
 	private String sqlStatement;
 	private ColumnType[] columnTypes;
+	private TullFrame copyFrame;
 
 	public TullFrameFactory(){
 		
@@ -49,6 +50,10 @@ public class TullFrameFactory {
 		this.columnTypes = columnTypes;
 		return this;
 	}
+	public TullFrameFactory fromTullFrame(TullFrame tf){
+		this.copyFrame = tf;
+		return this;
+	}
 	public TullFrame build() {
 		if (headers != null && columnTypes != null){
 			if (headers.length != columnTypes.length){
@@ -56,7 +61,15 @@ public class TullFrameFactory {
 			}
 		}
 		TullFrame frame;
-		if(csvFile != null){
+		if(copyFrame != null){
+			headers = copyFrame.getColumnNames().toArray(new String[0]);
+			columnTypes = copyFrame.getColumnTypes().toArray(new ColumnType[0]);
+			frame = new TullFrame(headers, columnTypes);
+			for (Row r: copyFrame){
+				frame.addRow(r.toStringArray());
+			}
+		}
+		else if(csvFile != null){
 			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
 				String[] headerRow = reader.readNext();
 				headers = (headers == null?headerRow:headers);
