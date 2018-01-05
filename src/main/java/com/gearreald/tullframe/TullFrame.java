@@ -31,12 +31,12 @@ import net.tullco.tullutils.FileUtils;
 
 public class TullFrame implements Iterable<Row>, Serializable {
 
-	private static final long serialVersionUID = 5681357572939610351L;
 	private Map<String, Column> columns;
 	private List<String> columnNames;
 	private int currentIndex;
 	private List<Integer> indexList;
 	private Set<Integer> indexSet;
+	private static final long serialVersionUID = 5681357572939610351L;
 	
 	protected TullFrame(String[] headers, ColumnType[] columnTypes){
 		columns = new HashMap<String, Column>();
@@ -59,121 +59,43 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		addColumn(name, c);
 		return c;
 	}
-	protected void addColumn(String name, Column c){
-		columns.put(name, c);
-		columnNames.add(name);
-	}
-	/**
-	 * Removes the given column from the data frame.
-	 * @param columnName The name of the column to remove.
-	 * @return The column that was removed.
-	 */
-	public Column removeColumn(String columnName){
-		this.columnNames.remove(columnName);
-		return this.columns.remove(columnName);
-	}
-	/**
-	 * Removes the given row from the dataframe.
-	 * @param rowNum The row number of the row to remove.
-	 */
-	public void removeRow(int rowNum){
-		removeRowAtIndex(rowNumToIndex(rowNum));
-	}
-	/**
-	 * Removes the row from the data frame.
-	 * @param r The row object you want removed.
-	 * Please make sure that it's actually a row object from this data frame otherwise you may get unpredictable behavior.
-	 */
-	public void removeRow(Row r){
-		removeRowAtIndex(r.getIndex());
-	}
-	private void removeRowAtIndex(int index){
-		this.indexList.remove(index);
-		for(String columnName: columnNames){
-			this.columns.get(columnName).removeIndex(index);
-		}
-	}
-	protected int rowNumToIndex(int rowNum){
-		return this.indexList.get(rowNum);
-	}
-	protected int indexToRowNum(int index){
-		if(!indexSet.contains(index))
-			throw new TullFrameException("Somehow, you've gotten an invalid index. This is likely a bug. It's probably not your fault. This time O:)");
-		return indexList.indexOf(index);
-	}
-	protected Row getRow(int rowNum){
-		return new Row(rowNumToIndex(rowNum), this.columns, this.columnNames, this);
-	}
-	protected void initializeStringColumns(String[] names){
-		columns.clear();
-		columnNames.clear();
-		for (String name: names){
-			columns.put(name, new StringColumn());
-			columnNames.add(name);
-		}
-	}
-	public void addRow(List<String> valueList){
-		addRow(valueList.toArray(new String[0]));
-	}
-	public void addRow(String[] valueArray){
-		if(valueArray.length != columns.size()){
-			throw new TullFrameException("The new row has the wrong number of elements.");
-		}
-		for(int i = 0; i < columnNames.size(); i++){
-			Column col = columns.get(columnNames.get(i));
-			col.set(currentIndex,valueArray[i]);
-		}
-		indexList.add(currentIndex);
-		indexSet.add(currentIndex);
-		currentIndex++;
-		
-	}
-	public int size(){
-		return indexList.size();
-	}
-	public void filterRows(Filter... filters){
-		List<Integer> indexesToRemove = new ArrayList<Integer>();
+	public void addNewBooleanColumn(String columnName, BooleanColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.BOOLEAN);
 		for(Row r: this){
-			for(Filter f: filters){
-				if(!f.condition(r))
-					indexesToRemove.add(r.getIndex());
+			int index = r.getIndex();
+			Boolean newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
 			}
-		}
-		for(int i: indexesToRemove){
-			this.removeRowAtIndex(i);
+			c.set(index, newValue);
 		}
 	}
-	public int rowCount(){
-		return size();
-	}
-	public List<String> getColumnNames(){
-		return this.columnNames;
-	}
-	public List<ColumnType> getColumnTypes(){
-		List<ColumnType> types = new ArrayList<ColumnType>();
-		for (String s: columnNames){
-			types.add(this.getColumn(s).getColumnType());
-		}
-		return types;
-	}
-	public Column getColumn(String columnName){
-		return this.columns.get(columnName);
-	}
-	public int countColumns(){
-		return columns.size();
-	}
-	public void toCsv(File f) throws IOException{
-		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
-			String[] headers = columnNames.toArray(new String[0]); 
-			writer.writeNext(headers);
-			for(Integer i: indexList){
-				String[] row = new String[headers.length];
-				for (int j=0;j<headers.length;j++){
-					String columnName = columnNames.get(j); 
-					row[j] = columns.get(columnName).getString(i);
-				}
-				writer.writeNext(row);
+	public void addNewDateColumn(String columnName, DateColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.DATE);
+		for(Row r: this){
+			int index = r.getIndex();
+			LocalDate newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
 			}
+			c.set(index, newValue);
+		}
+	}
+	public void addNewDoubleColumn(String columnName, DoubleColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.DOUBLE);
+		for(Row r: this){
+			int index = r.getIndex();
+			Double newValue;
+			try{
+				newValue = adder.calculation(r);
+			}catch(NullPointerException e){
+				newValue = null;
+			}
+			c.set(index, newValue);
 		}
 	}
 	public void addNewIntegerColumn(String columnName, IntColumnAdder adder){
@@ -202,24 +124,11 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			c.set(index, newValue);
 		}
 	}
-	public void addNewDoubleColumn(String columnName, DoubleColumnAdder adder){
-		Column c = addEmptyColumn(columnName, ColumnType.DOUBLE);
+	public void addNewStringColumn(String columnName, StringColumnAdder adder){
+		Column c = addEmptyColumn(columnName, ColumnType.STRING);
 		for(Row r: this){
 			int index = r.getIndex();
-			Double newValue;
-			try{
-				newValue = adder.calculation(r);
-			}catch(NullPointerException e){
-				newValue = null;
-			}
-			c.set(index, newValue);
-		}
-	}
-	public void addNewDateColumn(String columnName, DateColumnAdder adder){
-		Column c = addEmptyColumn(columnName, ColumnType.DATE);
-		for(Row r: this){
-			int index = r.getIndex();
-			LocalDate newValue;
+			String newValue;
 			try{
 				newValue = adder.calculation(r);
 			}catch(NullPointerException e){
@@ -241,31 +150,49 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			c.set(index, newValue);
 		}
 	}
-	public void addNewBooleanColumn(String columnName, BooleanColumnAdder adder){
-		Column c = addEmptyColumn(columnName, ColumnType.BOOLEAN);
+	public void addRow(List<String> valueList){
+		addRow(valueList.toArray(new String[0]));
+	}
+	public void addRow(String[] valueArray){
+		if(valueArray.length != columns.size()){
+			throw new TullFrameException("The new row has the wrong number of elements.");
+		}
+		for(int i = 0; i < columnNames.size(); i++){
+			Column col = columns.get(columnNames.get(i));
+			col.set(currentIndex,valueArray[i]);
+		}
+		indexList.add(currentIndex);
+		indexSet.add(currentIndex);
+		currentIndex++;
+		
+	}
+	public int countColumns(){
+		return columns.size();
+	}
+	public void filterRows(Filter... filters){
+		List<Integer> indexesToRemove = new ArrayList<Integer>();
 		for(Row r: this){
-			int index = r.getIndex();
-			Boolean newValue;
-			try{
-				newValue = adder.calculation(r);
-			}catch(NullPointerException e){
-				newValue = null;
+			for(Filter f: filters){
+				if(!f.condition(r))
+					indexesToRemove.add(r.getIndex());
 			}
-			c.set(index, newValue);
+		}
+		for(int i: indexesToRemove){
+			this.removeRowAtIndex(i);
 		}
 	}
-	public void addNewStringColumn(String columnName, StringColumnAdder adder){
-		Column c = addEmptyColumn(columnName, ColumnType.STRING);
-		for(Row r: this){
-			int index = r.getIndex();
-			String newValue;
-			try{
-				newValue = adder.calculation(r);
-			}catch(NullPointerException e){
-				newValue = null;
-			}
-			c.set(index, newValue);
+	public Column getColumn(String columnName){
+		return this.columns.get(columnName);
+	}
+	public List<String> getColumnNames(){
+		return this.columnNames;
+	}
+	public List<ColumnType> getColumnTypes(){
+		List<ColumnType> types = new ArrayList<ColumnType>();
+		for (String s: columnNames){
+			types.add(this.getColumn(s).getColumnType());
 		}
+		return types;
 	}
 	@Override
 	public Iterator<Row> iterator() {
@@ -284,5 +211,78 @@ public class TullFrame implements Iterable<Row>, Serializable {
 				
 		};
 		return i;
+	}
+	/**
+	 * Removes the given column from the data frame.
+	 * @param columnName The name of the column to remove.
+	 * @return The column that was removed.
+	 */
+	public Column removeColumn(String columnName){
+		this.columnNames.remove(columnName);
+		return this.columns.remove(columnName);
+	}
+	/**
+	 * Removes the given row from the dataframe.
+	 * @param rowNum The row number of the row to remove.
+	 */
+	public void removeRow(int rowNum){
+		removeRowAtIndex(rowNumToIndex(rowNum));
+	}
+	/**
+	 * Removes the row from the data frame.
+	 * @param r The row object you want removed.
+	 * Please make sure that it's actually a row object from this data frame otherwise you may get unpredictable behavior.
+	 */
+	public void removeRow(Row r){
+		removeRowAtIndex(r.getIndex());
+	}
+	public int rowCount(){
+		return size();
+	}
+	public int size(){
+		return indexList.size();
+	}
+	public void toCsv(File f) throws IOException{
+		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
+			String[] headers = columnNames.toArray(new String[0]); 
+			writer.writeNext(headers);
+			for(Integer i: indexList){
+				String[] row = new String[headers.length];
+				for (int j=0;j<headers.length;j++){
+					String columnName = columnNames.get(j); 
+					row[j] = columns.get(columnName).getString(i);
+				}
+				writer.writeNext(row);
+			}
+		}
+	}
+	protected void addColumn(String name, Column c){
+		columns.put(name, c);
+		columnNames.add(name);
+	}
+	protected Row getRow(int rowNum){
+		return new Row(rowNumToIndex(rowNum), this.columns, this.columnNames, this);
+	}
+	protected int indexToRowNum(int index){
+		if(!indexSet.contains(index))
+			throw new TullFrameException("Somehow, you've gotten an invalid index. This is likely a bug. It's probably not your fault. This time O:)");
+		return indexList.indexOf(index);
+	}
+	protected void initializeStringColumns(String[] names){
+		columns.clear();
+		columnNames.clear();
+		for (String name: names){
+			columns.put(name, new StringColumn());
+			columnNames.add(name);
+		}
+	}
+	protected int rowNumToIndex(int rowNum){
+		return this.indexList.get(rowNum);
+	}
+	private void removeRowAtIndex(int index){
+		this.indexList.remove(index);
+		for(String columnName: columnNames){
+			this.columns.get(columnName).removeIndex(index);
+		}
 	}
 }
