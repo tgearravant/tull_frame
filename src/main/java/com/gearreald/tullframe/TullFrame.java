@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
+import com.gearreald.tullframe.exceptions.ColumnNameException;
 import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.interfaces.Filter;
 import com.gearreald.tullframe.interfaces.column_adders.BooleanColumnAdder;
@@ -44,8 +45,10 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		indexSet = new HashSet<Integer>();
 		currentIndex = 0;
 		indexList = new ArrayList<Integer>();
-		for(int i = 0; i < headers.length; i++){
-			addEmptyColumn(headers[i], columnTypes[i]);
+		if(headers!= null){
+			for(int i = 0; i < headers.length; i++){
+				addEmptyColumn(headers[i], columnTypes[i]);
+			}
 		}
 	}
 	/**
@@ -149,6 +152,43 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			}
 			c.set(index, newValue);
 		}
+	}
+	public void setUniqueIndex(String columnName){
+		try{
+			this.columns.get(columnName).createUniqueIndex();
+		}catch(NullPointerException e){
+			throw new ColumnNameException(e);
+		}
+	}
+	public void setLookupIndex(String columnName){
+		try{
+			this.columns.get(columnName).createLookupIndex();
+		}catch(NullPointerException e){
+			throw new ColumnNameException(e);
+		}
+	}
+	public Row lookupRowByUniqueKey(Object lookupValue, String columnName){
+		return lookupRowByUniqueKey(lookupValue, columnName, false);
+	}
+	public Row lookupRowByUniqueKey(Object lookupValue, String columnName, boolean forceNoIndex){
+		Column c = this.columns.get(columnName);
+		if(c == null)
+			throw new ColumnNameException("That column doesn't exist.");
+		return this.getRowByIndex(c.uniqueLookup(lookupValue, forceNoIndex));
+	}
+	public Set<Row>lookupRows(Object lookupValue, String columnName){
+		return lookupRows(lookupValue, columnName, false);
+	}
+	public Set<Row> lookupRows(Object lookupValue, String columnName, boolean forceNoIndex){
+		Column c = this.columns.get(columnName);
+		if(c == null)
+			throw new ColumnNameException("That column doesn't exist.");
+		Set<Row> rows = new HashSet<Row>();
+		Set<Integer> lookupIndices = c.valueLookup(lookupValue, forceNoIndex);
+		for(Integer i: lookupIndices){
+			rows.add(this.getRowByIndex(i));
+		}
+		return rows;
 	}
 	public void addRow(List<String> valueList){
 		addRow(valueList.toArray(new String[0]));
@@ -260,8 +300,11 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		columns.put(name, c);
 		columnNames.add(name);
 	}
-	protected Row getRow(int rowNum){
-		return new Row(rowNumToIndex(rowNum), this.columns, this.columnNames, this);
+	protected Row getRowByIndex(int index){
+		return new Row(index, this.columns, this.columnNames, this);
+	}
+	public Row getRow(int rowNum){
+		return getRowByIndex(rowNumToIndex(rowNum));
 	}
 	protected int indexToRowNum(int index){
 		if(!indexSet.contains(index))
@@ -276,6 +319,15 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			columnNames.add(name);
 		}
 	}
+	public void renameColumn(String currentName, String newName){
+		if(!columns.containsKey(currentName))
+			throw new ColumnNameException("The column does not exist.");
+		if(!columns.containsKey(newName))
+			throw new ColumnNameException("The new column name is already taken.");
+		int colIndex = columnNames.indexOf(currentName);
+		columnNames.set(colIndex, newName);
+		
+	}
 	protected int rowNumToIndex(int rowNum){
 		return this.indexList.get(rowNum);
 	}
@@ -284,5 +336,15 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		for(String columnName: columnNames){
 			this.columns.get(columnName).removeIndex(index);
 		}
+	}
+	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn){
+		return merge(base, merge, mergeColumn, false);
+	}
+	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn, boolean forceNoIndex){
+		List<String> originalHeaders = base.columnNames;
+		List<String> mergeHeaders = merge.columnNames;
+		if(!originalHeaders.contains(mergeColumn) || !mergeHeaders.contains(mergeColumn))
+			throw new TullFrameException("Both frames need to contain the merge key");
+		return null;
 	}
 }

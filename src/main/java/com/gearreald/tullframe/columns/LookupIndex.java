@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class LookupIndex {
-	private Map<Object, Set<Integer>> columnIndex;
-	protected boolean uniqueIndex;
+	private Map<Object, Set<Integer>> lookupIndex;
+	private Set<Integer> nullIndices;
 	
 	protected LookupIndex(Column c){
-		columnIndex = new HashMap<Object, Set<Integer>>();
-		uniqueIndex = true;
+		lookupIndex = new HashMap<Object, Set<Integer>>();
+		nullIndices = new HashSet<Integer>();
 		Map<Integer, ? extends Object> columnValues = c.getBackingMap();
 		for (int index: columnValues.keySet()){
 			Object value = columnValues.get(index);
@@ -19,15 +19,27 @@ public class LookupIndex {
 		}
 	}
 	protected void addValuetoIndex(Object o, int i){
+		if(o == null)
+			nullIndices.add(i);
 		Set<Integer> values;
-		if(!columnIndex.containsKey(o)){
+		if(!lookupIndex.containsKey(o)){
 			values = new HashSet<Integer>();
-			columnIndex.put(o, values);
+			lookupIndex.put(o, values);
 		}
 		else{
-			values = columnIndex.get(o);
-			uniqueIndex = false;
+			values = lookupIndex.get(o);
 		}
 		values.add(i);
+	}
+	protected void removeValueFromIndex(Object o, int i){
+		if(o == null)
+			nullIndices.remove(i);
+		Set<Integer> valueIndices = lookupIndex.get(o);
+		if(valueIndices != null){
+			valueIndices.remove(i);
+		}
+	}
+	protected Set<Integer> getValuesFromIndex(Object o){
+		return lookupIndex.get(o);
 	}
 }

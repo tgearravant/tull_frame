@@ -1,19 +1,86 @@
 package com.gearreald.tullframe.columns;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.gearreald.tullframe.exceptions.BooleanParseException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
+import com.gearreald.tullframe.exceptions.IndexException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
-public abstract class Column {
-	
-	public static final int QUICK_TYPE_VALUES = 5;
+public abstract class Column implements Serializable{
 
+	private static final long serialVersionUID = -8626093972148251030L;
+	protected boolean hasUniqueIndex = false;
+	protected boolean hasLookupIndex = false;
+	protected UniqueIndex uniqueIndex;
+	protected LookupIndex lookupIndex;
+	protected static final int QUICK_TYPE_VALUES = 5;
+
+	public void createUniqueIndex(){
+		uniqueIndex = new UniqueIndex(this);
+		hasUniqueIndex = true;
+	}
+	public void createLookupIndex(){
+		lookupIndex = new LookupIndex(this);
+		hasLookupIndex = true;
+	}
+	public Integer uniqueLookup(Object o) {
+		return uniqueLookup(o, false);
+	}
+	public Integer uniqueLookup(Object o, boolean force) throws IndexException{
+		if(!hasUniqueIndex && !force)
+			throw new IndexException("The column is not indexed. Lookups will be slow and unreliable. To override, use uniqueLookup(object, true)");
+		if(hasUniqueIndex){
+			return uniqueIndex.getValuesFromIndex(o); 
+		}else if (hasLookupIndex){
+			Set<Integer> values = lookupIndex.getValuesFromIndex(o);
+			if (values == null || values.isEmpty())
+				return null;
+			return values.iterator().next();
+		}else {
+			for(Integer i: this.getBackingMap().keySet()){
+				Object inputItem = this.getBackingMap().get(i);
+				if (o.equals(inputItem)){
+					return i;
+				}
+			}
+			return null;
+		}
+	}
+	public Set<Integer> valueLookup(Object o){
+		return valueLookup(o, true);
+	}
+	public Set<Integer> valueLookup(Object o, boolean force) throws IndexException{
+		if((!hasUniqueIndex && !hasLookupIndex) && !force){
+			throw new IndexException("The column is not indexed. Lookups will be slow and unreliable. To override, use valueLookup(object, true)");
+		}
+		if(hasLookupIndex){
+			return lookupIndex.getValuesFromIndex(o);
+		}else if(hasUniqueIndex){
+			Integer i = uniqueIndex.getValuesFromIndex(o);
+			Set<Integer> set = new HashSet<Integer>();
+			set.add(i);
+			return set;
+		}else{
+			Set<Integer> set = new HashSet<Integer>();
+			for(Integer i: this.getBackingMap().keySet()){
+				Object inputItem = this.getBackingMap().get(i);
+				if (o.equals(inputItem)){
+					set.add(i);
+				}
+			}
+			if(set.isEmpty())
+				return null;
+			return set;
+		}
+	}
 	public int getInt(int index){
 		throw new ColumnTypeMismatchException("This is not an integer column.");
 	}
@@ -94,29 +161,75 @@ public abstract class Column {
 		}
 	}
 	
+	private void checkUniqueness(Object o){
+		if(hasUniqueIndex)
+			if(uniqueIndex.getValuesFromIndex(o) != null)
+				throw new IndexException("Unique constraint violated");
+	}
+	private void addToIndices(int index, Object o){
+		if(hasUniqueIndex)
+			uniqueIndex.addValuetoIndex(o, index);
+		if(hasLookupIndex)
+			lookupIndex.addValuetoIndex(o, index);
+	}
 	public void set(int index, int value){
-		throw new ColumnTypeMismatchException("This is not an integer column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, double value){
-		throw new ColumnTypeMismatchException("This is not a double column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, boolean value){
-		throw new ColumnTypeMismatchException("This is not a boolean column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, LocalDate value){
-		throw new ColumnTypeMismatchException("This is not a date column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, LocalDateTime value){
-		throw new ColumnTypeMismatchException("This is not a time column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, long value){
-		throw new ColumnTypeMismatchException("This is not a long column.");
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
 	}
 	public void set(int index, String value){
+		checkUniqueness(value);
+		setValue(index, value);
+		addToIndices(index, value);
+	}
+	public void setValue(int index, int value){
+		throw new ColumnTypeMismatchException("This is not an integer column.");
+	}
+	public void setValue(int index, double value){
+		throw new ColumnTypeMismatchException("This is not a double column.");
+	}
+	public void setValue(int index, boolean value){
+		throw new ColumnTypeMismatchException("This is not a boolean column.");
+	}
+	public void setValue(int index, LocalDate value){
+		throw new ColumnTypeMismatchException("This is not a date column.");
+	}
+	public void setValue(int index, LocalDateTime value){
+		throw new ColumnTypeMismatchException("This is not a time column.");
+	}
+	public void setValue(int index, long value){
+		throw new ColumnTypeMismatchException("This is not a long column.");
+	}
+	public void setValue(int index, String value){
 		throw new ColumnTypeMismatchException("This is not a string column.");
 	}
 	public void set(int index, Object value){
-		set(index, value.toString());
+		setValue(index, value.toString());
 	}
 	
 	protected abstract Map<Integer,? extends Object> getBackingMap(); 

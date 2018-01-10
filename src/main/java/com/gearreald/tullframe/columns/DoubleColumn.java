@@ -24,15 +24,15 @@ public class DoubleColumn extends Column {
 		return getDouble(index);
 	}
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
-			this.set(index, Double.parseDouble(value));
+			this.setValue(index, Double.parseDouble(value));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a double.", value, index), e);
 		}
 	}
 	@Override
-	public void set(int index, double value){
+	public void setValue(int index, double value){
 		this.values.put(index, value);
 	}
 	@Override

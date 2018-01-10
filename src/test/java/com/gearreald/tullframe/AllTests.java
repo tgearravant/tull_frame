@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ TullFrameFactoryTest.class, ColumnAdderTest.class, RowManipulationTest.class })
+@SuiteClasses({ TullFrameFactoryTest.class, ColumnAdderTest.class, RowManipulationTest.class, IndexTest.class })
 public class AllTests {
 
 }

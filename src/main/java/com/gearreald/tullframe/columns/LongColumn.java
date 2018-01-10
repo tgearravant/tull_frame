@@ -24,15 +24,15 @@ public class LongColumn extends Column {
 		return getLong(index);
 	}
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
-			this.set(index, Long.parseLong(value));
+			this.setValue(index, Long.parseLong(value));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a long.", value, index), e);
 		}
 	}
 	@Override
-	public void set(int index, long value){
+	public void setValue(int index, long value){
 		this.values.put(index, value);
 	}
 	@Override

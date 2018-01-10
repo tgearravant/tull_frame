@@ -27,15 +27,15 @@ public class DateColumn extends Column {
 	}
 	
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
-			this.set(index, LocalDate.parse(value));
+			this.setValue(index, LocalDate.parse(value));
 		}catch (DateTimeParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a properly formatted date.", value, index), e);
 		}
 	}
 	@Override
-	public void set(int index, LocalDate value){
+	public void setValue(int index, LocalDate value){
 		this.values.put(index, value);
 	}
 	@Override

@@ -26,7 +26,7 @@ public class TimeColumn extends Column {
 		return getTime(index);
 	}
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
 			this.set(index, LocalDateTime.parse(value));
 		}catch (DateTimeParseException e){
@@ -34,7 +34,7 @@ public class TimeColumn extends Column {
 		}
 	}
 	@Override
-	public void set(int index, LocalDateTime value){
+	public void setValue(int index, LocalDateTime value){
 		this.values.put(index, value);
 	}
 	@Override

@@ -26,15 +26,15 @@ public class BooleanColumn extends Column {
 		return getBoolean(index);
 	}
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
-			this.set(index, parseBoolean(value));
+			this.setValue(index, parseBoolean(value));
 		}catch(BooleanParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s is not a boolean.", value), e);
 		}
 	}
 	@Override
-	public void set(int index, boolean value){
+	public void setValue(int index, boolean value){
 		this.values.put(index, value);
 	}
 	@Override

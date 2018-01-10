@@ -24,15 +24,15 @@ public class IntegerColumn extends Column {
 		return getInt(index);
 	}
 	@Override
-	public void set(int index, String value){
+	public void setValue(int index, String value){
 		try{
-			this.set(index, Integer.parseInt(value));
+			this.setValue(index, Integer.parseInt(value));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not an int.", value, index), e);
 		}
 	}
 	@Override
-	public void set(int index, int value){
+	public void setValue(int index, int value){
 		this.values.put(index, value);
 	}
 	@Override

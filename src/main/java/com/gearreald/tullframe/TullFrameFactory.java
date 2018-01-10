@@ -1,7 +1,11 @@
 package com.gearreald.tullframe;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -19,13 +23,22 @@ public class TullFrameFactory {
 	
 	private File csvFile;
 	private String[] headers;
+	private String[] uniqueIndexes;
+	private String[] lookupIndexes;
 	private Connection conn;
 	private String sqlStatement;
 	private ColumnType[] columnTypes;
 	private TullFrame copyFrame;
 
 	public TullFrameFactory(){
-		
+		csvFile = null;
+		headers = null;
+		uniqueIndexes = null;
+		lookupIndexes = null;
+		conn = null;
+		sqlStatement = null;
+		columnTypes = null;
+		copyFrame = null;
 	}
 	public TullFrameFactory fromCSV(File f){
 		csvFile = f;
@@ -54,6 +67,14 @@ public class TullFrameFactory {
 		this.copyFrame = tf;
 		return this;
 	}
+	public TullFrameFactory setUniqueIndex(String... columnNames){
+		uniqueIndexes = columnNames;
+		return this;
+	}
+	public TullFrameFactory setLookupIndex(String... columnNames){
+		lookupIndexes = columnNames;
+		return this;
+	}
 	public TullFrame build() {
 		if (headers != null && columnTypes != null){
 			if (headers.length != columnTypes.length){
@@ -62,11 +83,17 @@ public class TullFrameFactory {
 		}
 		TullFrame frame;
 		if(copyFrame != null){
-			headers = copyFrame.getColumnNames().toArray(new String[0]);
-			columnTypes = copyFrame.getColumnTypes().toArray(new ColumnType[0]);
-			frame = new TullFrame(headers, columnTypes);
-			for (Row r: copyFrame){
-				frame.addRow(r.toStringArray());
+			try{
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ObjectOutputStream oos = new ObjectOutputStream(baos);
+				oos.writeObject(copyFrame);
+	
+				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+				ObjectInputStream ois = new ObjectInputStream(bais);
+				frame = (TullFrame) ois.readObject();
+			} catch (IOException | ClassNotFoundException e) {
+				e.printStackTrace();
+				frame = new TullFrame(headers, columnTypes);
 			}
 		}
 		else if(csvFile != null){
@@ -80,6 +107,7 @@ public class TullFrameFactory {
 					}
 				}
 				frame = new TullFrame(headers, columnTypes);
+				setIndexes(frame);
 				String[] line;
 				while ((line = reader.readNext()) != null){
 					for(int i = 0; i < line.length; i++){
@@ -109,6 +137,7 @@ public class TullFrameFactory {
 				if(columnTypes == null)
 					columnTypes = sqlColumnTypes;
 				frame = new TullFrame(headers, columnTypes);
+				setIndexes(frame);
 				while(rs.next()){
 					String[] row = new String[sqlColumns];
 					for (int i = 1; i <= sqlColumns; i++){
@@ -122,6 +151,7 @@ public class TullFrameFactory {
 		}
 		else{
 			frame = new TullFrame(headers, columnTypes);
+			setIndexes(frame);
 		}
 		
 		return frame;
@@ -143,5 +173,17 @@ public class TullFrameFactory {
 			return ColumnType.BOOLEAN;
 		else
 			throw new UnimplementedException(String.format("The datatype %d is not supported", sqlType));
+	}
+	private void setIndexes(TullFrame tf){
+		if(uniqueIndexes != null) {
+			for(String s: uniqueIndexes){
+				tf.setUniqueIndex(s);
+			}
+		}
+		if(lookupIndexes != null) {
+			for(String s: lookupIndexes){
+				tf.setLookupIndex(s);
+			}
+		}
 	}
 }
