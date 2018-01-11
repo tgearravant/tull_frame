@@ -325,8 +325,13 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		if(!columns.containsKey(newName))
 			throw new ColumnNameException("The new column name is already taken.");
 		int colIndex = columnNames.indexOf(currentName);
-		columnNames.set(colIndex, newName);
-		
+		columnNames.set(colIndex, newName);	
+	}
+	public boolean hasColumn(String columnName){
+		return this.columnNames.contains(columnName);
+	}
+	public ColumnType getTypeOfColumn(String columnName){
+		return this.columns.get(columnName).getColumnType();
 	}
 	protected int rowNumToIndex(int rowNum){
 		return this.indexList.get(rowNum);
@@ -340,11 +345,76 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn){
 		return merge(base, merge, mergeColumn, false);
 	}
+	/**
+	 * @param base
+	 * @param merge
+	 * @param mergeColumn
+	 * @param forceNoIndex
+	 * @return
+	 */
 	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn, boolean forceNoIndex){
-		List<String> originalHeaders = base.columnNames;
-		List<String> mergeHeaders = merge.columnNames;
-		if(!originalHeaders.contains(mergeColumn) || !mergeHeaders.contains(mergeColumn))
+		if(!base.hasColumn(mergeColumn) || !merge.hasColumn(mergeColumn))
 			throw new TullFrameException("Both frames need to contain the merge key");
+		
+		List<String> baseHeaders = new ArrayList<String>();
+		List<ColumnType> baseColumnTypes = new ArrayList<ColumnType>();
+		for(String header: base.columnNames){
+			baseHeaders.add(header);
+			baseColumnTypes.add(base.getTypeOfColumn(header));
+		}
+		
+		List<String> mergeHeaders = new ArrayList<String>();
+		List<ColumnType> mergeColumnTypes = new ArrayList<ColumnType>();
+		for(String header: merge.columnNames){
+			mergeHeaders.add(header);
+			mergeColumnTypes.add(base.getTypeOfColumn(header));
+		}
+		
+		List<String> newHeaders = new ArrayList<String>();
+		List<ColumnType> newColumnTypes = new ArrayList<ColumnType>();
+		Map<String, String> mapOfOldHeadersToNewHeaders = new HashMap<String, String>();
+		newHeaders.addAll(baseHeaders);
+		newColumnTypes.addAll(baseColumnTypes);
+		
+		for(int i=0; i < mergeHeaders.size(); i++){
+			String header = mergeHeaders.get(i);
+			ColumnType colType = mergeColumnTypes.get(i);
+			if(header.equals(mergeColumn))
+				continue;
+			else{
+				String newHeader = getNewHeader(newHeaders, header);
+				newHeaders.add(newHeader);
+				newColumnTypes.add(colType);
+				mapOfOldHeadersToNewHeaders.put(header, newHeader);
+			}
+		}
+		
+		TullFrame newFrame = new TullFrameFactory()
+				.setColumnHeaders(newHeaders).
+				setColumnTypes(newColumnTypes)
+				.setUniqueIndex(mergeColumn)
+				.build();
+		
+		for(Row r: base){
+			List<String> valuesToAdd = new ArrayList<String>();
+			r.getClass();
+			newFrame.addRow(valuesToAdd);
+		}
+		
 		return null;
+	}
+	private static String getNewHeader(List<String> existingHeaders, String headerToAdd){
+		if(!existingHeaders.contains(headerToAdd))
+			return headerToAdd;
+		else
+			return getNewHeader(existingHeaders, headerToAdd, 1);
+	}
+	private static String getNewHeader(List<String> existingHeaders, String headerToAdd, int index){
+		String headerToTest = headerToAdd+"_"+index;
+		if(!existingHeaders.contains(headerToTest)){
+			return headerToTest;
+		}else{
+			return getNewHeader(existingHeaders, headerToAdd, index + 1);
+		}
 	}
 }

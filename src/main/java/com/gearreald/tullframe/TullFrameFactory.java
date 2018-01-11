@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 
 import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
@@ -55,9 +56,15 @@ public class TullFrameFactory {
 		csvFile = null;
 		return this;
 	}
+	public TullFrameFactory setColumnHeaders(List<String> headers){
+		return setColumnHeaders(headers.toArray(new String[0]));
+	}
 	public TullFrameFactory setColumnHeaders(String[] headers){
 		this.headers = headers;
 		return this;
+	}
+	public TullFrameFactory setColumnTypes(List<ColumnType> columnTypes){
+		return setColumnTypes(columnTypes.toArray(new ColumnType[0]));
 	}
 	public TullFrameFactory setColumnTypes(ColumnType[] columnTypes){
 		this.columnTypes = columnTypes;
