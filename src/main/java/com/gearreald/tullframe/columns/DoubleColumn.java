@@ -8,6 +8,7 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class DoubleColumn extends Column {
 	
+	private static final long serialVersionUID = 1291818685093182854L;
 	private Map<Integer,Double> values;
 
 	public DoubleColumn(){
@@ -15,7 +16,7 @@ public class DoubleColumn extends Column {
 	}
 	
 	@Override
-	public double getDouble(int index) {
+	public Double getDouble(int index) {
 		return values.get(index);
 	}
 

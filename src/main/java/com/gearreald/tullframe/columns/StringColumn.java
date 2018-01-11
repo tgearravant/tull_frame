@@ -7,6 +7,7 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class StringColumn extends Column {
 	
+	private static final long serialVersionUID = -4258592413320365821L;
 	private Map<Integer, String> values;
 
 	public StringColumn(){

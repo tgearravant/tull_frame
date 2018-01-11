@@ -9,6 +9,7 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class BooleanColumn extends Column {
 	
+	private static final long serialVersionUID = -3031544693642350198L;
 	private final static String[] POTENTIAL_TRUE_VALUES = {"true","t","1","y","yes"};
 	private final static String[] POTENTIAL_FALSE_VALUES = {"false","f","0","n","no"};
 	
@@ -18,7 +19,7 @@ public class BooleanColumn extends Column {
 		values = new HashMap<Integer,Boolean>();
 	}
 	@Override
-	public boolean getBoolean(int index) {
+	public Boolean getBoolean(int index) {
 		return values.get(index);
 	}
 	@Override

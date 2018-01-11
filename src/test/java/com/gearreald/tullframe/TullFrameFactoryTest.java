@@ -64,19 +64,19 @@ public class TullFrameFactoryTest {
 		assertEquals("person_first", frame.getColumnNames().get(1));
 		assertEquals("person_last", frame.getColumnNames().get(2));
 		Row r = frame.getRow(0);
-		assertEquals(1,r.getInt("person_id"));
+		assertEquals(1,r.getInt("person_id").intValue());
 		assertEquals("Rondi",r.getString("person_first"));
 		assertEquals("Hargi",r.getString("person_last"));
 		r = frame.getRow(1);
-		assertEquals(2,r.getInt("person_id"));
+		assertEquals(2,r.getInt("person_id").intValue());
 		assertEquals("Kroni",r.getString("person_first"));
 		assertEquals("Banthua",r.getString("person_last"));
 		r = frame.getRow(2);
-		assertEquals(3,r.getInt("person_id"));
+		assertEquals(3,r.getInt("person_id").intValue());
 		assertEquals("Kenaii",r.getString("person_first"));
 		assertEquals("Kruda",r.getString("person_last"));
 		try{
-			assertEquals(3,r.getInt("id"));
+			assertEquals(3,r.getInt("id").intValue());
 			fail("Didn't throw an exception on the default column name");
 		}catch(ColumnNameException e){}
 	}
@@ -93,19 +93,19 @@ public class TullFrameFactoryTest {
 		assertEquals("person_first", frame.getColumnNames().get(1));
 		assertEquals("person_last", frame.getColumnNames().get(2));
 		Row r = frame.getRow(0);
-		assertEquals(1,r.getInt("person_id"));
+		assertEquals(1,r.getInt("person_id").intValue());
 		assertEquals("Rondi",r.getString("person_first"));
 		assertEquals("Hargi",r.getString("person_last"));
 		r = frame.getRow(1);
-		assertEquals(2,r.getInt("person_id"));
+		assertEquals(2,r.getInt("person_id").intValue());
 		assertEquals("Kroni",r.getString("person_first"));
 		assertEquals("Banthua",r.getString("person_last"));
 		r = frame.getRow(2);
-		assertEquals(3,r.getInt("person_id"));
+		assertEquals(3,r.getInt("person_id").intValue());
 		assertEquals("Kenaii",r.getString("person_first"));
 		assertEquals("Kruda",r.getString("person_last"));
 		try{
-			assertEquals(3,r.getInt("id"));
+			assertEquals(3,r.getInt("id").intValue());
 			fail("Didn't throw an exception on the default column name");
 		}catch(ColumnNameException e){}
 	}
@@ -120,15 +120,15 @@ public class TullFrameFactoryTest {
 		assertEquals("first_name", frame.getColumnNames().get(1));
 		assertEquals("last_name", frame.getColumnNames().get(2));
 		Row r = frame.getRow(0);
-		assertEquals(1,r.getInt("id"));
+		assertEquals(1,r.getInt("id").intValue());
 		assertEquals("Rondi",r.getString("first_name"));
 		assertEquals("Hargi",r.getString("last_name"));
 		r = frame.getRow(1);
-		assertEquals(2,r.getInt("id"));
+		assertEquals(2,r.getInt("id").intValue());
 		assertEquals("Kroni",r.getString("first_name"));
 		assertEquals("Banthua",r.getString("last_name"));
 		r = frame.getRow(2);
-		assertEquals(3,r.getInt("id"));
+		assertEquals(3,r.getInt("id").intValue());
 		assertEquals("Kenaii",r.getString("first_name"));
 		assertEquals("Kruda",r.getString("last_name"));
 		try{

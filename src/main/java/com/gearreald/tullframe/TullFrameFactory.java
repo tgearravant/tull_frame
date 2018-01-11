@@ -3,6 +3,7 @@ package com.gearreald.tullframe;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -30,6 +31,7 @@ public class TullFrameFactory {
 	private String sqlStatement;
 	private ColumnType[] columnTypes;
 	private TullFrame copyFrame;
+	private File serializedFile;
 
 	public TullFrameFactory(){
 		csvFile = null;
@@ -40,6 +42,7 @@ public class TullFrameFactory {
 		sqlStatement = null;
 		columnTypes = null;
 		copyFrame = null;
+		serializedFile = null;
 	}
 	public TullFrameFactory fromCSV(File f){
 		csvFile = f;
@@ -54,6 +57,10 @@ public class TullFrameFactory {
 		this.conn = conn;
 		this.sqlStatement = statement;
 		csvFile = null;
+		return this;
+	}
+	public TullFrameFactory fromSerializedFile(File f){
+		serializedFile = f;
 		return this;
 	}
 	public TullFrameFactory setColumnHeaders(List<String> headers){
@@ -89,7 +96,15 @@ public class TullFrameFactory {
 			}
 		}
 		TullFrame frame;
-		if(copyFrame != null){
+		if(serializedFile != null){
+			try(FileInputStream fileInputStream = new FileInputStream(serializedFile);
+			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);){
+				Object object = objectInputStream.readObject();
+				frame = (TullFrame) object;
+			}catch(IOException | ClassNotFoundException e){
+				frame = new TullFrame(headers, columnTypes);
+			}
+		}else if(copyFrame != null){
 			try{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -102,8 +117,7 @@ public class TullFrameFactory {
 				e.printStackTrace();
 				frame = new TullFrame(headers, columnTypes);
 			}
-		}
-		else if(csvFile != null){
+		}else if(csvFile != null){
 			try (CSVReader reader = FileUtils.getCSVReader(csvFile)){
 				String[] headerRow = reader.readNext();
 				headers = (headers == null?headerRow:headers);
@@ -126,8 +140,7 @@ public class TullFrameFactory {
 			} catch (IOException e){
 				throw new TullFrameException("Error reading CSV data.", e);
 			}
-		}
-		else if(conn != null && sqlStatement != null){
+		}else if(conn != null && sqlStatement != null){
 			try (SQLUtil sql = new SQLUtil(conn)){
 			
 				ResultSet rs = sql.executeSelect(sqlStatement);

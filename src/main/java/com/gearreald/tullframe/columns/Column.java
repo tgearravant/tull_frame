@@ -81,7 +81,7 @@ public abstract class Column implements Serializable{
 			return set;
 		}
 	}
-	public int getInt(int index){
+	public Integer getInt(int index){
 		throw new ColumnTypeMismatchException("This is not an integer column.");
 	}
 	public LocalDate getDate(int index){
@@ -93,22 +93,22 @@ public abstract class Column implements Serializable{
 	public String getString(int index){
 		return this.getValue(index).toString();
 	}
-	public boolean getBoolean(int index){
+	public Boolean getBoolean(int index){
 		throw new ColumnTypeMismatchException("This is not a boolean column.");
 	}
-	public long getLong(int index) {
+	public Long getLong(int index) {
 		throw new ColumnTypeMismatchException("This is not a long column.");
 	}
-	public double getDouble(int index){
+	public Double getDouble(int index){
 		throw new ColumnTypeMismatchException("This is not a double column.");
 	}
 	public abstract Object getValue(int index);
 	
-	public int optInt(int index){
+	public Integer optInt(int index){
 		try{
 			return getInt(index);
 		}catch(ColumnTypeMismatchException e){
-			return 0;
+			return null;
 		}
 	}
 	public LocalDate optDate(int index) {
@@ -132,25 +132,25 @@ public abstract class Column implements Serializable{
 			return null;
 		}
 	}
-	public boolean optBoolean(int index){
+	public Boolean optBoolean(int index){
 		try{
 			return getBoolean(index);
 		}catch(ColumnTypeMismatchException e){
-			return false;
+			return null;
 		}
 	}
-	public long optLong(int index){
+	public Long optLong(int index){
 		try{
 			return getLong(index);
 		}catch(ColumnTypeMismatchException e){
-			return 0L;
+			return null;
 		}		
 	}
-	public double optDouble(int index){
+	public Double optDouble(int index){
 		try{
 			return getDouble(index);
 		}catch(ColumnTypeMismatchException e){
-			return 0d;
+			return null;
 		}		
 	}
 	public Object optValue(int index){

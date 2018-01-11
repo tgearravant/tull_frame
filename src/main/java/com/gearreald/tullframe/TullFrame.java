@@ -1,7 +1,9 @@
 package com.gearreald.tullframe;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -174,7 +176,8 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		Column c = this.columns.get(columnName);
 		if(c == null)
 			throw new ColumnNameException("That column doesn't exist.");
-		return this.getRowByIndex(c.uniqueLookup(lookupValue, forceNoIndex));
+		Integer valueIndex = c.uniqueLookup(lookupValue, forceNoIndex);
+		return (valueIndex == null ? null : this.getRowByIndex(valueIndex));
 	}
 	public Set<Row>lookupRows(Object lookupValue, String columnName){
 		return lookupRows(lookupValue, columnName, false);
@@ -286,14 +289,15 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
 			String[] headers = columnNames.toArray(new String[0]); 
 			writer.writeNext(headers);
-			for(Integer i: indexList){
-				String[] row = new String[headers.length];
-				for (int j=0;j<headers.length;j++){
-					String columnName = columnNames.get(j); 
-					row[j] = columns.get(columnName).getString(i);
-				}
-				writer.writeNext(row);
+			for(Row r: this){
+				writer.writeNext(r.toStringArray());
 			}
+		}
+	}
+	public void serializeToFile(File f) throws IOException{
+		try (FileOutputStream fout = new FileOutputStream(f);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);){
+			oos.writeObject(this);
 		}
 	}
 	protected void addColumn(String name, Column c){
@@ -322,10 +326,11 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public void renameColumn(String currentName, String newName){
 		if(!columns.containsKey(currentName))
 			throw new ColumnNameException("The column does not exist.");
-		if(!columns.containsKey(newName))
+		if(columns.containsKey(newName))
 			throw new ColumnNameException("The new column name is already taken.");
 		int colIndex = columnNames.indexOf(currentName);
 		columnNames.set(colIndex, newName);	
+		columns.put(newName, columns.remove(currentName));
 	}
 	public boolean hasColumn(String columnName){
 		return this.columnNames.contains(columnName);
@@ -367,12 +372,12 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		List<ColumnType> mergeColumnTypes = new ArrayList<ColumnType>();
 		for(String header: merge.columnNames){
 			mergeHeaders.add(header);
-			mergeColumnTypes.add(base.getTypeOfColumn(header));
+			mergeColumnTypes.add(merge.getTypeOfColumn(header));
 		}
 		
 		List<String> newHeaders = new ArrayList<String>();
 		List<ColumnType> newColumnTypes = new ArrayList<ColumnType>();
-		Map<String, String> mapOfOldHeadersToNewHeaders = new HashMap<String, String>();
+		Map<String, String> mapOfNewHeadersToOldHeaders = new HashMap<String, String>();
 		newHeaders.addAll(baseHeaders);
 		newColumnTypes.addAll(baseColumnTypes);
 		
@@ -385,7 +390,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 				String newHeader = getNewHeader(newHeaders, header);
 				newHeaders.add(newHeader);
 				newColumnTypes.add(colType);
-				mapOfOldHeadersToNewHeaders.put(header, newHeader);
+				mapOfNewHeadersToOldHeaders.put(newHeader, header);
 			}
 		}
 		
@@ -397,11 +402,27 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		
 		for(Row r: base){
 			List<String> valuesToAdd = new ArrayList<String>();
-			r.getClass();
+			Object mergeKey = r.getValue(mergeColumn);
+			Row mergeRow = merge.lookupRowByUniqueKey(mergeKey, mergeColumn, forceNoIndex);
+			for(String newHeader: newHeaders){
+				if(newHeader.equals(mergeColumn)){
+					valuesToAdd.add(r.getString(mergeColumn));
+				}else if(base.hasColumn(newHeader)){
+					valuesToAdd.add(r.getString(newHeader));
+				}else{
+					if(mergeRow == null)
+						valuesToAdd.add(null);
+					else if(mergeRow.hasColumn(newHeader)){
+						valuesToAdd.add(mergeRow.getString(newHeader));
+					}else{
+						valuesToAdd.add(mergeRow.getString(mapOfNewHeadersToOldHeaders.get(newHeader)));
+					}
+				}
+			}
 			newFrame.addRow(valuesToAdd);
 		}
 		
-		return null;
+		return newFrame;
 	}
 	private static String getNewHeader(List<String> existingHeaders, String headerToAdd){
 		if(!existingHeaders.contains(headerToAdd))

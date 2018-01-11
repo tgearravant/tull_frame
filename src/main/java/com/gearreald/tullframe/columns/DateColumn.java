@@ -10,6 +10,7 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class DateColumn extends Column {
 	
+	private static final long serialVersionUID = -9145953491716571136L;
 	private Map<Integer, LocalDate> values;
 
 	public DateColumn(){

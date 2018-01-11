@@ -10,6 +10,10 @@
 apply plugin: 'java-library'
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+group 'com.gearreald'
+version '1.0'
 
 targetCompatibility = '1.8'
 
@@ -22,6 +26,18 @@ repositories {
     maven {
 		url "http://gearreald.com/maven2"
 	}
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.gearreald'
+            artifactId 'TullFrame'
+            version '1.0.3'
+
+            from components.java
+        }
+    }
 }
 
 dependencies {

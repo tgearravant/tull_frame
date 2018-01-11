@@ -52,9 +52,9 @@ public class ColumnAdderTest {
 		};
 		frame.addNewLongColumn("id_squared", longAdder);
 		assertEquals(frame.countColumns(), 4);
-		assertEquals(frame.getRow(0).getLong("id_squared"), 1);
-		assertEquals(frame.getRow(1).getLong("id_squared"), 4);
-		assertEquals(frame.getRow(2).getLong("id_squared"), 9);
+		assertEquals(frame.getRow(0).getLong("id_squared").longValue(), 1);
+		assertEquals(frame.getRow(1).getLong("id_squared").longValue(), 4);
+		assertEquals(frame.getRow(2).getLong("id_squared").longValue(), 9);
 	}
 	@Test
 	public void testAddIntegerColumn(){
@@ -65,9 +65,9 @@ public class ColumnAdderTest {
 		};
 		frame.addNewIntegerColumn("id_squared", intAdder);
 		assertEquals(frame.countColumns(), 4);
-		assertEquals(frame.getRow(0).getInt("id_squared"), 1);
-		assertEquals(frame.getRow(1).getInt("id_squared"), 4);
-		assertEquals(frame.getRow(2).getInt("id_squared"), 9);
+		assertEquals(frame.getRow(0).getInt("id_squared").intValue(), 1);
+		assertEquals(frame.getRow(1).getInt("id_squared").intValue(), 4);
+		assertEquals(frame.getRow(2).getInt("id_squared").intValue(), 9);
 	}
 	@Test
 	public void testAddDateColumn(){

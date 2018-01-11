@@ -11,6 +11,7 @@ import com.gearreald.tullframe.utils.ColumnType;
 
 public class TimeColumn extends Column {
 	
+	private static final long serialVersionUID = -764806219465810839L;
 	private Map<Integer, LocalDateTime> values;
 
 	public TimeColumn(){
