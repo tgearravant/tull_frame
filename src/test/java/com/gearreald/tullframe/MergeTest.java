@@ -20,9 +20,10 @@ public class MergeTest {
 	@Before
 	public void setUp() throws Exception {
 		File f = (ResourceUtils.getResourceFile(ColumnAdderTest.class, "csv/testSheet.csv"));
+		File f2 = (ResourceUtils.getResourceFile(ColumnAdderTest.class, "csv/mergeSheet.csv"));
 		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
 		base = new TullFrameFactory().fromCSV(f).setColumnTypes(columnTypes).build();
-		merge = new TullFrameFactory().fromCSV(f).setColumnTypes(columnTypes).build();
+		merge = new TullFrameFactory().fromCSV(f2).setColumnTypes(columnTypes).build();
 	}
 
 	@Test
@@ -41,20 +42,20 @@ public class MergeTest {
 		assertEquals(output.getTypeOfColumn("id"), ColumnType.INTEGER);
 		assertEquals("first_name",mergedColumns.get(1));
 		assertEquals("last_name",mergedColumns.get(2));
-		assertEquals("first_name_1",mergedColumns.get(3));
+		assertEquals("occupation",mergedColumns.get(3));
 		assertEquals("last_name_1",mergedColumns.get(4));
 		Row r = output.getRow(0);
 		assertEquals(1,r.getInt("id").intValue());
 		assertEquals("Rondi",r.getString("first_name"));
 		assertEquals("Hargi",r.getString("last_name"));
-		assertEquals("Rondi",r.getString("first_name_1"));
+		assertEquals("Miner",r.getString("occupation"));
 		assertEquals("Hargi",r.getString("last_name_1"));
 		r = output.getRow(1);
 		assertEquals(2,r.getInt("id").intValue());
 		assertEquals("Kroni",r.getString("first_name"));
 		assertEquals("Banthua",r.getString("last_name"));
-		assertEquals("Kroni",r.getString("first_name_1"));
-		assertEquals("Banthua",r.getString("last_name_1"));
+		assertNull(r.getString("occupation"));
+		assertNull(r.getString("last_name_1"));
 	}
 	
 	@Test
@@ -76,20 +77,20 @@ public class MergeTest {
 		assertEquals(output.getTypeOfColumn("id"), ColumnType.INTEGER);
 		assertEquals("first_name",mergedColumns.get(1));
 		assertEquals("last_name",mergedColumns.get(2));
-		assertEquals("first_name_1",mergedColumns.get(3));
+		assertEquals("occupation",mergedColumns.get(3));
 		assertEquals("last_name_1",mergedColumns.get(4));
 		Row r = output.getRow(0);
 		assertEquals(1,r.getInt("id").intValue());
 		assertEquals("Rondi",r.getString("first_name"));
 		assertEquals("Hargi",r.getString("last_name"));
-		assertEquals("Rondi",r.getString("first_name_1"));
+		assertEquals("Miner",r.getString("occupation"));
 		assertEquals("Hargi",r.getString("last_name_1"));
 		r = output.getRow(1);
 		assertEquals(2,r.getInt("id").intValue());
 		assertEquals("Kroni",r.getString("first_name"));
 		assertEquals("Banthua",r.getString("last_name"));
-		assertEquals("Kroni",r.getString("first_name_1"));
-		assertEquals("Banthua",r.getString("last_name_1"));
+		assertNull(r.getString("occupation"));
+		assertNull(r.getString("last_name_1"));
 		
 	}
 

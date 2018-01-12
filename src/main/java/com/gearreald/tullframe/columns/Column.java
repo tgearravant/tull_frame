@@ -91,6 +91,8 @@ public abstract class Column implements Serializable{
 		throw new ColumnTypeMismatchException("This is not a time column.");
 	}
 	public String getString(int index){
+		if(this.getValue(index) == null)
+			return null;
 		return this.getValue(index).toString();
 	}
 	public Boolean getBoolean(int index){
