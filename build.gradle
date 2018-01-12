@@ -33,7 +33,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.gearreald'
             artifactId 'TullFrame'
-            version '1.0.3'
+            version '1.0.5'
 
             from components.java
         }

@@ -1,11 +1,14 @@
 package com.gearreald.tullframe.columns;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class LookupIndex {
+public class LookupIndex implements Serializable{
+
+	private static final long serialVersionUID = 6635710772683403165L;
 	private Map<Object, Set<Integer>> lookupIndex;
 	private Set<Integer> nullIndices;
 	

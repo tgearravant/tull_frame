@@ -1,5 +1,6 @@
 package com.gearreald.tullframe.columns;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -7,7 +8,9 @@ import java.util.Set;
 
 import com.gearreald.tullframe.exceptions.IndexException;
 
-public class UniqueIndex {
+public class UniqueIndex implements Serializable{
+
+	private static final long serialVersionUID = 2031295145301772492L;
 	private Map<Object, Integer> columnIndex;
 	private Set<Integer> nullIndices;
 	
