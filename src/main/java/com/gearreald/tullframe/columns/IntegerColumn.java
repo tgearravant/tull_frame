@@ -27,13 +27,16 @@ public class IntegerColumn extends Column {
 	@Override
 	public void setValue(int index, String value){
 		try{
-			this.setValue(index, Integer.parseInt(value));
+			this.setValue(index, (value == null ? null : Integer.parseInt(value)));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not an int.", value, index), e);
+		}catch (NullPointerException e){
+			Integer i = null;
+			this.setValue(index, i);
 		}
 	}
 	@Override
-	public void setValue(int index, int value){
+	public void setValue(int index, Integer value){
 		this.values.put(index, value);
 	}
 	@Override

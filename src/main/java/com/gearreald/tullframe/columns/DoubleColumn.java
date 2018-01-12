@@ -27,13 +27,16 @@ public class DoubleColumn extends Column {
 	@Override
 	public void setValue(int index, String value){
 		try{
-			this.setValue(index, Double.parseDouble(value));
+			this.setValue(index, (value == null ? null : Double.parseDouble(value)));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a double.", value, index), e);
+		}catch (NullPointerException e){
+			Double i = null;
+			this.setValue(index, i);
 		}
 	}
 	@Override
-	public void setValue(int index, double value){
+	public void setValue(int index, Double value){
 		this.values.put(index, value);
 	}
 	@Override

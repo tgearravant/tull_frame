@@ -35,7 +35,7 @@ public class BooleanColumn extends Column {
 		}
 	}
 	@Override
-	public void setValue(int index, boolean value){
+	public void setValue(int index, Boolean value){
 		this.values.put(index, value);
 	}
 	@Override
@@ -46,7 +46,9 @@ public class BooleanColumn extends Column {
 	public ColumnType getColumnType() {
 		return ColumnType.BOOLEAN;
 	}
-	protected static boolean parseBoolean(String value) throws BooleanParseException{
+	protected static Boolean parseBoolean(String value) throws BooleanParseException{
+		if(value == null)
+			return null;
 		for(String s: POTENTIAL_TRUE_VALUES){
 			if (value.toLowerCase().equals(s)){
 				return true;

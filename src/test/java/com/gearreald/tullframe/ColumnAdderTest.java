@@ -42,13 +42,17 @@ public class ColumnAdderTest {
 		assertEquals(frame.countColumns(), 4);
 		assertTrue(frame.getRow(0).getBoolean("named_rondi"));
 		assertFalse(frame.getRow(1).getBoolean("named_rondi"));
+		BooleanColumnAdder nullAdder = (Row r) -> {
+			return null;
+		};
+		frame.addNewBooleanColumn("named_rondi", nullAdder);
 	}
 	@Test
 	public void testAddLongColumn(){
 		assertEquals(frame.size(), 3);
 		assertEquals(frame.countColumns(), 3);
 		LongColumnAdder longAdder = (Row r) -> {
-			return r.getInt("id") * r.getInt("id");
+			return new Long(r.getInt("id") * r.getInt("id"));
 		};
 		frame.addNewLongColumn("id_squared", longAdder);
 		assertEquals(frame.countColumns(), 4);

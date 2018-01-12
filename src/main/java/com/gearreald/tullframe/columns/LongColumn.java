@@ -27,13 +27,16 @@ public class LongColumn extends Column {
 	@Override
 	public void setValue(int index, String value){
 		try{
-			this.setValue(index, Long.parseLong(value));
+			this.setValue(index, (value == null ? null : Long.parseLong(value)));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a long.", value, index), e);
+		}catch (NullPointerException e){
+			Long i = null;
+			this.setValue(index, i);
 		}
 	}
 	@Override
-	public void setValue(int index, long value){
+	public void setValue(int index, Long value){
 		this.values.put(index, value);
 	}
 	@Override

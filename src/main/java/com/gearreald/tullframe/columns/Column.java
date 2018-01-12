@@ -174,17 +174,17 @@ public abstract class Column implements Serializable{
 		if(hasLookupIndex)
 			lookupIndex.addValuetoIndex(o, index);
 	}
-	public void set(int index, int value){
+	public void set(int index, Integer value){
 		checkUniqueness(value);
 		setValue(index, value);
 		addToIndices(index, value);
 	}
-	public void set(int index, double value){
+	public void set(int index, Double value){
 		checkUniqueness(value);
 		setValue(index, value);
 		addToIndices(index, value);
 	}
-	public void set(int index, boolean value){
+	public void set(int index, Boolean value){
 		checkUniqueness(value);
 		setValue(index, value);
 		addToIndices(index, value);
@@ -199,7 +199,7 @@ public abstract class Column implements Serializable{
 		setValue(index, value);
 		addToIndices(index, value);
 	}
-	public void set(int index, long value){
+	public void set(int index, Long value){
 		checkUniqueness(value);
 		setValue(index, value);
 		addToIndices(index, value);
@@ -209,13 +209,13 @@ public abstract class Column implements Serializable{
 		setValue(index, value);
 		addToIndices(index, value);
 	}
-	public void setValue(int index, int value){
+	public void setValue(int index, Integer value){
 		throw new ColumnTypeMismatchException("This is not an integer column.");
 	}
-	public void setValue(int index, double value){
+	public void setValue(int index, Double value){
 		throw new ColumnTypeMismatchException("This is not a double column.");
 	}
-	public void setValue(int index, boolean value){
+	public void setValue(int index, Boolean value){
 		throw new ColumnTypeMismatchException("This is not a boolean column.");
 	}
 	public void setValue(int index, LocalDate value){
@@ -224,14 +224,14 @@ public abstract class Column implements Serializable{
 	public void setValue(int index, LocalDateTime value){
 		throw new ColumnTypeMismatchException("This is not a time column.");
 	}
-	public void setValue(int index, long value){
+	public void setValue(int index, Long value){
 		throw new ColumnTypeMismatchException("This is not a long column.");
 	}
 	public void setValue(int index, String value){
 		throw new ColumnTypeMismatchException("This is not a string column.");
 	}
 	public void set(int index, Object value){
-		setValue(index, value.toString());
+		setValue(index, (value==null ? null : value.toString()));
 	}
 	
 	protected abstract Map<Integer,? extends Object> getBackingMap(); 
