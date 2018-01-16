@@ -351,11 +351,11 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return merge(base, merge, mergeColumn, false);
 	}
 	/**
-	 * @param base
-	 * @param merge
-	 * @param mergeColumn
-	 * @param forceNoIndex
-	 * @return
+	 * @param base The frame that you want to merge columns into
+	 * @param merge The frame to merge into the base frame.
+	 * @param mergeColumn The name of the column to merge on.
+	 * @param forceNoIndex Allows merging on columns that don't have indexes.
+	 * @return A new TullFrame that has the merged data from both frames.
 	 */
 	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn, boolean forceNoIndex){
 		if(!base.hasColumn(mergeColumn) || !merge.hasColumn(mergeColumn))

@@ -33,9 +33,11 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.gearreald'
             artifactId 'TullFrame'
-            version '1.0.6.7'
+            version '1.0.6.8'
 
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
@@ -52,3 +54,12 @@ dependencies {
     testImplementation 'org.xerial:sqlite-jdbc:3.21.0.1'
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
