@@ -59,7 +59,7 @@ public abstract class Column implements Serializable{
 	}
 	public Set<Integer> valueLookup(Object o, boolean force) throws IndexException{
 		if((!hasUniqueIndex && !hasLookupIndex) && !force){
-			throw new IndexException("The column is not indexed. Lookups will be slow and unreliable. To override, use valueLookup(object, true)");
+			throw new IndexException("The column is not indexed. Lookups will be slow and will not check for duplicates. To override, use valueLookup(object, true)");
 		}
 		if(hasLookupIndex){
 			return lookupIndex.getValuesFromIndex(o);
@@ -176,62 +176,62 @@ public abstract class Column implements Serializable{
 	}
 	public void set(int index, Integer value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, Double value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, Boolean value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, LocalDate value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, LocalDateTime value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, Long value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
 	public void set(int index, String value){
 		checkUniqueness(value);
-		setValue(index, value);
-		addToIndices(index, value);
+		Object o = setValue(index, value);
+		addToIndices(index, o);
 	}
-	public void setValue(int index, Integer value){
+	protected  Object setValue(int index, Integer value){
 		throw new ColumnTypeMismatchException("This is not an integer column.");
 	}
-	public void setValue(int index, Double value){
+	protected Object setValue(int index, Double value){
 		throw new ColumnTypeMismatchException("This is not a double column.");
 	}
-	public void setValue(int index, Boolean value){
+	protected Object setValue(int index, Boolean value){
 		throw new ColumnTypeMismatchException("This is not a boolean column.");
 	}
-	public void setValue(int index, LocalDate value){
+	protected Object setValue(int index, LocalDate value){
 		throw new ColumnTypeMismatchException("This is not a date column.");
 	}
-	public void setValue(int index, LocalDateTime value){
+	protected Object setValue(int index, LocalDateTime value){
 		throw new ColumnTypeMismatchException("This is not a time column.");
 	}
-	public void setValue(int index, Long value){
+	protected Object setValue(int index, Long value){
 		throw new ColumnTypeMismatchException("This is not a long column.");
 	}
-	public void setValue(int index, String value){
+	protected Object setValue(int index, String value){
 		throw new ColumnTypeMismatchException("This is not a string column.");
 	}
 	public void set(int index, Object value){
-		setValue(index, (value==null ? null : value.toString()));
+		set(index, (value==null ? null : value.toString()));
 	}
 	
 	protected abstract Map<Integer,? extends Object> getBackingMap(); 

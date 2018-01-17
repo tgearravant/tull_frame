@@ -19,8 +19,9 @@ public class StringColumn extends Column {
 		return values.get(index);
 	}
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		this.values.put(index, value);
+		return value;
 	}
 
 	@Override

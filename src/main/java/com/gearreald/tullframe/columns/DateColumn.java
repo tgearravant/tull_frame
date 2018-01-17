@@ -28,16 +28,17 @@ public class DateColumn extends Column {
 	}
 	
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		try{
-			this.setValue(index, LocalDate.parse(value));
+			return this.setValue(index, LocalDate.parse(value));
 		}catch (DateTimeParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a properly formatted date.", value, index), e);
 		}
 	}
 	@Override
-	public void setValue(int index, LocalDate value){
+	public Object setValue(int index, LocalDate value){
 		this.values.put(index, value);
+		return value;
 	}
 	@Override
 	protected Map<Integer, ? extends Object> getBackingMap() {

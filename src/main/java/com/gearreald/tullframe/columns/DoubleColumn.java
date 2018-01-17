@@ -25,19 +25,20 @@ public class DoubleColumn extends Column {
 		return getDouble(index);
 	}
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		try{
-			this.setValue(index, (value == null ? null : Double.parseDouble(value)));
+			return this.setValue(index, (value == null ? null : Double.parseDouble(value)));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a double.", value, index), e);
 		}catch (NullPointerException e){
 			Double i = null;
-			this.setValue(index, i);
+			return this.setValue(index, i);
 		}
 	}
 	@Override
-	public void setValue(int index, Double value){
+	public Object setValue(int index, Double value){
 		this.values.put(index, value);
+		return value;
 	}
 	@Override
 	protected Map<Integer, ? extends Object> getBackingMap() {

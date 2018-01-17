@@ -27,16 +27,17 @@ public class BooleanColumn extends Column {
 		return getBoolean(index);
 	}
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		try{
-			this.setValue(index, parseBoolean(value));
+			return this.setValue(index, parseBoolean(value));
 		}catch(BooleanParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s is not a boolean.", value), e);
 		}
 	}
 	@Override
-	public void setValue(int index, Boolean value){
+	public Object setValue(int index, Boolean value){
 		this.values.put(index, value);
+		return value;
 	}
 	@Override
 	protected Map<Integer, ? extends Object> getBackingMap() {

@@ -27,16 +27,17 @@ public class TimeColumn extends Column {
 		return getTime(index);
 	}
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		try{
-			this.set(index, LocalDateTime.parse(value));
+			return this.setValue(index, LocalDateTime.parse(value));
 		}catch (DateTimeParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a properly formatted date time.", value, index), e);
 		}
 	}
 	@Override
-	public void setValue(int index, LocalDateTime value){
+	public Object setValue(int index, LocalDateTime value){
 		this.values.put(index, value);
+		return value;
 	}
 	@Override
 	protected Map<Integer, ? extends Object> getBackingMap() {

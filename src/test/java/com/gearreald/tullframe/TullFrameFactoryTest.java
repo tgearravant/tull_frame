@@ -170,4 +170,14 @@ public class TullFrameFactoryTest {
 			fail("The wrong data type didn't throw an exception!");
 		}catch(ColumnNameException e){}
 	}
+	@Test
+	public void testLoadWithIndices() {
+		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
+		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
+		TullFrame originalFrame = new TullFrameFactory().fromCSV(f).setColumnTypes(columnTypes).setUniqueIndex("id").build();
+		Row r = originalFrame.lookupRowByUniqueKey(new Integer("1"), "id");
+		assertEquals(new Integer(1),r.getInt("id"));
+		assertEquals("Rondi",r.getString("first_name"));
+		assertEquals("Hargi",r.getString("last_name"));
+	}
 }

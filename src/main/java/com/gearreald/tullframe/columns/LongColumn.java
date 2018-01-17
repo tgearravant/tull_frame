@@ -25,19 +25,20 @@ public class LongColumn extends Column {
 		return getLong(index);
 	}
 	@Override
-	public void setValue(int index, String value){
+	public Object setValue(int index, String value){
 		try{
-			this.setValue(index, (value == null ? null : Long.parseLong(value)));
+			return this.setValue(index, (value == null ? null : Long.parseLong(value)));
 		}catch (NumberFormatException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a long.", value, index), e);
 		}catch (NullPointerException e){
 			Long i = null;
-			this.setValue(index, i);
+			return this.setValue(index, i);
 		}
 	}
 	@Override
-	public void setValue(int index, Long value){
+	public Object setValue(int index, Long value){
 		this.values.put(index, value);
+		return value;
 	}
 	@Override
 	protected Map<Integer, ? extends Object> getBackingMap() {
