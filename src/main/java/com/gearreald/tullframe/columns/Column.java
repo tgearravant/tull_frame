@@ -36,7 +36,7 @@ public abstract class Column implements Serializable{
 	}
 	public Integer uniqueLookup(Object o, boolean force) throws IndexException{
 		if(!hasUniqueIndex && !force)
-			throw new IndexException("The column is not indexed. Lookups will be slow and unreliable. To override, use uniqueLookup(object, true)");
+			throw new IndexException("The column is not indexed. Lookups will be slow and will not check for duplicates. To override, use uniqueLookup(object, true)");
 		if(hasUniqueIndex){
 			return uniqueIndex.getValuesFromIndex(o); 
 		}else if (hasLookupIndex){
@@ -59,7 +59,7 @@ public abstract class Column implements Serializable{
 	}
 	public Set<Integer> valueLookup(Object o, boolean force) throws IndexException{
 		if((!hasUniqueIndex && !hasLookupIndex) && !force){
-			throw new IndexException("The column is not indexed. Lookups will be slow and will not check for duplicates. To override, use valueLookup(object, true)");
+			throw new IndexException("The column is not indexed. Lookups will be slow. To override, use valueLookup(object, true)");
 		}
 		if(hasLookupIndex){
 			return lookupIndex.getValuesFromIndex(o);
