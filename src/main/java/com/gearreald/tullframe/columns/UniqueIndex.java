@@ -30,7 +30,7 @@ public class UniqueIndex implements Serializable{
 			columnIndex.put(o, i);
 		}
 		else{
-			throw new IndexException("Unique index contraint violated.");
+			throw new IndexException("Unique index contraint violated. Value: " + o.toString());
 		}
 	}
 	protected Integer getValuesFromIndex(Object o){
