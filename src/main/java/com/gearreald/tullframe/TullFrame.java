@@ -18,6 +18,7 @@ import java.util.Set;
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
 import com.gearreald.tullframe.exceptions.ColumnNameException;
+import com.gearreald.tullframe.exceptions.IndexException;
 import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.interfaces.Filter;
 import com.gearreald.tullframe.interfaces.column_adders.BooleanColumnAdder;
@@ -216,8 +217,12 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		List<Integer> indexesToRemove = new ArrayList<Integer>();
 		for(Row r: this){
 			for(Filter f: filters){
-				if(!f.condition(r))
+				try{
+					if(!f.condition(r))
+						indexesToRemove.add(r.getIndex());
+				}catch(NullPointerException e){
 					indexesToRemove.add(r.getIndex());
+				}
 			}
 		}
 		for(int i: indexesToRemove){
@@ -249,7 +254,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 
 			@Override
 			public Row next() {
-				return getRow(internalIterator.next());
+				return getRowByIndex(internalIterator.next());
 			}
 				
 		};
@@ -301,6 +306,8 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		}
 	}
 	protected void addColumn(String name, Column c){
+		if(columns.containsKey(name))
+			throw new ColumnNameException(String.format("The column %s already exists. Duplicate column names are not allowed.", name));
 		columns.put(name, c);
 		columnNames.add(name);
 	}
@@ -342,12 +349,20 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return this.indexList.get(rowNum);
 	}
 	private void removeRowAtIndex(int index){
-		this.indexList.remove(index);
+		this.indexList.remove(indexList.indexOf(index));
+		this.indexSet.remove(index);
 		for(String columnName: columnNames){
 			this.columns.get(columnName).removeIndex(index);
 		}
 	}
-	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn){
+	/**
+	 * @param base The frame that you want to merge columns into
+	 * @param merge The frame to merge into the base frame.
+	 * @param mergeColumn The name of the column to merge on.
+	 * @throws IndexException If the merge columns aren't indexed.
+	 * @return A new TullFrame that has the merged data from both frames.
+	 */
+	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn) {
 		return merge(base, merge, mergeColumn, false);
 	}
 	/**
@@ -358,7 +373,13 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	 * @return A new TullFrame that has the merged data from both frames.
 	 */
 	public static TullFrame merge(TullFrame base, TullFrame merge, String mergeColumn, boolean forceNoIndex){
-		if(!base.hasColumn(mergeColumn) || !merge.hasColumn(mergeColumn))
+		return merge(base, merge, mergeColumn, mergeColumn, forceNoIndex);
+	}
+	public static TullFrame merge(TullFrame base, TullFrame merge, String baseColumn, String mergeColumn){
+		return merge(base, merge, baseColumn, mergeColumn, false);
+	}
+	public static TullFrame merge(TullFrame base, TullFrame merge, String baseColumn, String mergeColumn, boolean forceNoIndex){
+		if(!base.hasColumn(baseColumn) || !merge.hasColumn(mergeColumn))
 			throw new TullFrameException("Both frames need to contain the merge key");
 		
 		List<String> baseHeaders = new ArrayList<String>();
@@ -397,12 +418,12 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		TullFrame newFrame = new TullFrameFactory()
 				.setColumnHeaders(newHeaders).
 				setColumnTypes(newColumnTypes)
-				.setUniqueIndex(mergeColumn)
+				//.setUniqueIndex(mergeColumn)
 				.build();
 		
 		for(Row r: base){
 			List<String> valuesToAdd = new ArrayList<String>();
-			Object mergeKey = r.getValue(mergeColumn);
+			Object mergeKey = r.getValue(baseColumn);
 			Row mergeRow = merge.lookupRowByUniqueKey(mergeKey, mergeColumn, forceNoIndex);
 			for(String newHeader: newHeaders){
 				if(newHeader.equals(mergeColumn)){

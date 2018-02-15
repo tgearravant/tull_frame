@@ -32,6 +32,9 @@ public class TimeColumn extends Column {
 			return this.setValue(index, LocalDateTime.parse(value));
 		}catch (DateTimeParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a properly formatted date time.", value, index), e);
+		}catch (NullPointerException e){
+			LocalDateTime i = null;
+			return this.setValue(index, i);
 		}
 	}
 	@Override

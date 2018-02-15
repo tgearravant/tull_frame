@@ -33,6 +33,9 @@ public class DateColumn extends Column {
 			return this.setValue(index, LocalDate.parse(value));
 		}catch (DateTimeParseException e){
 			throw new ColumnTypeMismatchException(String.format("The value %s at index %d is not a properly formatted date.", value, index), e);
+		}catch (NullPointerException e){
+			LocalDate i = null;
+			return this.setValue(index, i);
 		}
 	}
 	@Override

@@ -12,9 +12,6 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-group 'com.gearreald'
-version '1.0'
-
 targetCompatibility = '1.8'
 
 // In this section you declare where to find the dependencies of your project
@@ -33,7 +30,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.gearreald'
             artifactId 'TullFrame'
-            version '1.0.6.9'
+            version '1.0.7.6'
 
             from components.java
             artifact sourcesJar
