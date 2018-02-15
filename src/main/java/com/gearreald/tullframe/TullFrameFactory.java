@@ -21,7 +21,7 @@ import com.opencsv.CSVReader;
 import net.tullco.tullutils.FileUtils;
 import net.tullco.tullutils.SQLUtil;
 
-public class TullFrameFactory {
+public final class TullFrameFactory {
 	
 	private File csvFile;
 	private String[] headers;

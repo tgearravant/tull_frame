@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gearreald.tullframe.exceptions.IndexException;
+import com.gearreald.tullframe.factories.TullFrameMergeFactory;
 import com.gearreald.tullframe.utils.ColumnType;
 
 import net.tullco.tullutils.ResourceUtils;
@@ -34,7 +35,7 @@ public class MergeTest {
 		assertEquals(3, merge.countColumns());
 		assertEquals(3, base.rowCount());
 		assertEquals(3, merge.rowCount());
-		TullFrame output = TullFrame.merge(base, merge, "id");
+		TullFrame output = new TullFrameMergeFactory().byMerging(base, merge).onColumn("id").build();
 		assertEquals(5, output.countColumns());
 		assertEquals(3, output.rowCount());
 		List<String> mergedColumns = output.getColumnNames();
@@ -66,10 +67,10 @@ public class MergeTest {
 		assertEquals(3, merge.rowCount());
 		
 		try{
-			TullFrame.merge(base, merge, "id");
+			new TullFrameMergeFactory().byMerging(base, merge).onColumn("id").build();
 			fail("The merge didn't throw an index exception on an unindexed merge.");
 		}catch(IndexException e){}
-		TullFrame output = TullFrame.merge(base, merge, "id", true);
+		TullFrame output = new TullFrameMergeFactory().byMerging(base, merge).onColumn("id").ignoreIndexes(true).build();
 		assertEquals(5, output.countColumns());
 		assertEquals(3, output.rowCount());
 		List<String> mergedColumns = output.getColumnNames();

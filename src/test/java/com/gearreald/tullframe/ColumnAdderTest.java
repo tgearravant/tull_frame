@@ -45,7 +45,7 @@ public class ColumnAdderTest {
 		BooleanColumnAdder nullAdder = (Row r) -> {
 			return null;
 		};
-		frame.addNewBooleanColumn("named_rondi", nullAdder);
+		frame.addNewBooleanColumn("null_test", nullAdder);
 	}
 	@Test
 	public void testAddLongColumn(){
