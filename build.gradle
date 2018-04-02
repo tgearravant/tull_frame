@@ -30,7 +30,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.gearreald'
             artifactId 'TullFrame'
-            version '1.0.7.7'
+            version '1.0.7.8'
 
             from components.java
             artifact sourcesJar
@@ -44,7 +44,7 @@ dependencies {
     //api 'org.apache.commons:commons-math3:3.6.1'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'net.tullco:TullUtils:0.14.2'
+    implementation 'net.tullco:TullUtils:0.15.1'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
