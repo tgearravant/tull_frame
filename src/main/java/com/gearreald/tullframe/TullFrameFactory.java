@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 import com.gearreald.tullframe.exceptions.TullFrameException;
@@ -150,7 +151,7 @@ public final class TullFrameFactory {
 				ColumnType[] sqlColumnTypes = new ColumnType[sqlColumns];
 				for (int i = 1; i <= sqlColumns; i++){
 					sqlHeaders[i-1] = rsmd.getColumnLabel(i);
-					sqlColumnTypes[i-1] = getColumnTypeFromSQLType(rsmd.getColumnType(i));
+					sqlColumnTypes[i-1] = getColumnTypeFromSQLType(rsmd.getColumnType(i), rsmd.getColumnTypeName(i));
 				}
 				if(headers == null)
 					headers = sqlHeaders;
@@ -161,7 +162,7 @@ public final class TullFrameFactory {
 				while(rs.next()){
 					String[] row = new String[sqlColumns];
 					for (int i = 1; i <= sqlColumns; i++){
-						row[i-1] = rs.getString(i);
+						row[i-1] = getSQLValueAtIndexAsString(rs, i);
 					}
 					frame.addRow(row);
 				}
@@ -176,23 +177,72 @@ public final class TullFrameFactory {
 		
 		return frame;
 	}
-	private static ColumnType getColumnTypeFromSQLType(int sqlType){
+	private static ColumnType getColumnTypeFromSQLType(int sqlType, String sqlTypeName){
 		if(sqlType == -6 || sqlType == 5 || sqlType == 4)
 			return ColumnType.INTEGER;
 		else if(sqlType == -5)
 			return ColumnType.LONG;
 		else if(sqlType == 6 || sqlType == 7 || sqlType == 8 || sqlType == 2 || sqlType == 3)
 			return ColumnType.DOUBLE;
-		else if(sqlType == 1 || sqlType == 12 || sqlType == -1)
+		else if(sqlType == 1 || sqlType == 12 || sqlType == -1 || sqlType == -9 || sqlType == -16)
 			return ColumnType.STRING;
-		else if(sqlType == 91)
+		else if(sqlType == 91 || sqlType == -16)
 			return ColumnType.DATE;
 		else if(sqlType == 92 || sqlType == 93)
 			return ColumnType.TIME;
 		else if(sqlType == 16 || sqlType == -7)
 			return ColumnType.BOOLEAN;
+		else if(sqlType == 1111 && sqlTypeName.equals("jsonb"))
+			return ColumnType.STRING;
 		else
 			throw new UnimplementedException(String.format("The datatype %d is not supported", sqlType));
+	}
+	private static String getSQLValueAtIndexAsString(ResultSet rs, int index) throws SQLException{
+		ResultSetMetaData rsmd = rs.getMetaData();
+		if((rsmd.getColumnType(index)==Types.INTEGER) ||
+				(rsmd.getColumnType(index)==Types.SMALLINT) ||
+				(rsmd.getColumnType(index)==Types.TINYINT)){
+			return Integer.toString(rs.getInt(index));
+		}
+		else if(rsmd.getColumnType(index)==Types.BIGINT){
+			return Long.toString(rs.getLong(index));
+		}
+		else if(rsmd.getColumnType(index)==Types.DOUBLE ||
+				rsmd.getColumnType(index)==Types.FLOAT ||
+				rsmd.getColumnType(index)==Types.DECIMAL ||
+				rsmd.getColumnType(index)==Types.NUMERIC ||
+				rsmd.getColumnType(index)==Types.REAL){
+			return Double.toString(rs.getDouble(index));
+		}
+		else if(rsmd.getColumnType(index)==Types.VARCHAR ||
+				rsmd.getColumnType(index)==Types.BLOB ||
+				rsmd.getColumnType(index)==Types.LONGNVARCHAR ||
+				rsmd.getColumnType(index)==Types.LONGVARCHAR ||
+				rsmd.getColumnType(index)==Types.CHAR ||
+				rsmd.getColumnType(index)==Types.SQLXML){
+			return rs.getString(index);
+		}
+		else if(rsmd.getColumnType(index)==Types.BOOLEAN ||
+				rsmd.getColumnType(index)==(Types.BIT)){
+			return Boolean.toString(rs.getBoolean(index));
+		}
+		else if(rsmd.getColumnType(index)==Types.DATE){
+			return rs.getDate(index).toLocalDate().toString();
+		}
+		else if(rsmd.getColumnType(index)==Types.TIME ||
+			rsmd.getColumnType(index)==Types.TIME_WITH_TIMEZONE){
+			return rs.getTime(index).toLocalTime().toString();
+		}
+		else if(rsmd.getColumnType(index)==Types.TIMESTAMP ||
+				rsmd.getColumnType(index)==Types.TIMESTAMP_WITH_TIMEZONE){
+			return rs.getTimestamp(index).toLocalDateTime().toString();
+		}
+		else if(rsmd.getColumnType(index)==Types.OTHER && rsmd.getColumnTypeName(index).equals("jsonb")){
+			return rs.getString(index);
+		}
+		else{
+			throw new SQLException("Coult not convert "+rsmd.getColumnTypeName(index)+".");
+		}
 	}
 	private void setIndexes(TullFrame tf){
 		if(uniqueIndexes != null) {
