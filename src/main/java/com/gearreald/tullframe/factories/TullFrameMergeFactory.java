@@ -16,6 +16,7 @@ public class TullFrameMergeFactory {
 	private TullFrame baseFrame;
 	private TullFrame mergeFrame;
 	private boolean force;
+	private boolean concatenate;
 	private String baseColumn;
 	private String mergeColumn;
 	private String prefix;
@@ -23,10 +24,15 @@ public class TullFrameMergeFactory {
 	public TullFrameMergeFactory(){
 		baseFrame = null;
 		mergeFrame = null;
+		concatenate = false;
 		force = false;
 		baseColumn = null;
 		mergeColumn = null;
 		prefix = "";
+	}
+	public TullFrameMergeFactory byConcatenating(TullFrame base, TullFrame merge){
+		concatenate = true;
+		return this;
 	}
 	public TullFrameMergeFactory byMerging(TullFrame base, TullFrame merge){
 		this.baseFrame = base;
@@ -52,6 +58,22 @@ public class TullFrameMergeFactory {
 		return this;
 	}
 	public TullFrame build(){
+		if(concatenate)
+			return concatenate();
+		else
+			return merge();
+	}
+	private TullFrame concatenate(){
+		for(String colName: baseFrame.getColumnNames()){
+			if(!mergeFrame.hasColumn(colName))
+				throw new TullFrameException("The merge frame doesn't have matching columns to the original.");
+		}
+		for(Row r: mergeFrame){
+			r.getClass();
+		}
+		return null;
+	}
+	private TullFrame merge(){
 		if(baseFrame == null || mergeFrame == null || baseColumn == null)
 			throw new IllegalArgumentException("You must set the merge frames and base merge column.");
 		if(mergeColumn == null)
@@ -121,7 +143,6 @@ public class TullFrameMergeFactory {
 		
 		return newFrame;
 	}
-	
 	private static String getNewHeader(List<String> existingHeaders, String headerToAdd){
 		if(!existingHeaders.contains(headerToAdd))
 			return headerToAdd;
