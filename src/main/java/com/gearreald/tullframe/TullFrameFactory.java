@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,6 +34,9 @@ public final class TullFrameFactory {
 	private ColumnType[] columnTypes;
 	private TullFrame copyFrame;
 	private File serializedFile;
+	private File cacheDirectory;
+	private String cacheFileName;
+	private boolean generateCacheCsv;
 
 	public TullFrameFactory(){
 		csvFile = null;
@@ -44,6 +48,9 @@ public final class TullFrameFactory {
 		columnTypes = null;
 		copyFrame = null;
 		serializedFile = null;
+		cacheDirectory = null;
+		cacheFileName = null;
+		generateCacheCsv = true;
 	}
 	public TullFrameFactory fromCSV(File f){
 		csvFile = f;
@@ -52,6 +59,15 @@ public final class TullFrameFactory {
 				headers = reader.readNext();
 			} catch (IOException e) {}
 		}
+		return this;
+	}
+	public TullFrameFactory cachingDataAt(File directory, String fileName, boolean generateCacheCsv){
+		this.generateCacheCsv = generateCacheCsv;
+		return cachingDataAt(directory, fileName);
+	}
+	public TullFrameFactory cachingDataAt(File directory, String fileName){
+		cacheDirectory = directory;
+		cacheFileName = fileName;
 		return this;
 	}
 	public TullFrameFactory fromSQL(Connection conn, String statement){
@@ -96,12 +112,22 @@ public final class TullFrameFactory {
 				throw new TullFrameException("The headers and the column types don't match up.");
 			}
 		}
+		
+		if (cacheDirectory != null && cacheFileName != null){
+			File cacheFile = new File(cacheDirectory, cacheFileName + ".jobject");
+			if(cacheDirectory.exists())
+				if(cacheFile.exists())
+					try {
+						return deserializeFile(cacheFile);
+					} catch (ClassNotFoundException | IOException e) {
+						return new TullFrame(headers, columnTypes);
+					}
+		}
+		
 		TullFrame frame;
 		if(serializedFile != null){
-			try(FileInputStream fileInputStream = new FileInputStream(serializedFile);
-			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);){
-				Object object = objectInputStream.readObject();
-				frame = (TullFrame) object;
+			try{
+				frame = deserializeFile(serializedFile);
 			}catch(IOException | ClassNotFoundException e){
 				frame = new TullFrame(headers, columnTypes);
 			}
@@ -173,6 +199,20 @@ public final class TullFrameFactory {
 		else{
 			frame = new TullFrame(headers, columnTypes);
 			setIndexes(frame);
+		}
+		
+		if (cacheDirectory != null && cacheFileName != null){
+			File cacheFile = new File(cacheDirectory, cacheFileName + ".jobject");
+			File cacheCsv = new File(cacheDirectory, cacheFileName + ".csv");
+			if(!cacheDirectory.exists()) {
+				cacheDirectory.mkdir();
+			}
+			try{
+				frame.toCsv(cacheCsv);
+				frame.serializeToFile(cacheFile);
+			}catch(IOException e){
+				e.printStackTrace();
+			}
 		}
 		
 		return frame;
@@ -255,5 +295,12 @@ public final class TullFrameFactory {
 				tf.setLookupIndex(s);
 			}
 		}
+	}
+	private TullFrame deserializeFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException{
+		try(FileInputStream fileInputStream = new FileInputStream(f);
+				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);){
+					Object object = objectInputStream.readObject();
+					return (TullFrame) object;
+				}
 	}
 }

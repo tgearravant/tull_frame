@@ -3,6 +3,8 @@ package com.gearreald.tullframe;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -179,5 +181,50 @@ public class TullFrameFactoryTest {
 		assertEquals(new Integer(1),r.getInt("id"));
 		assertEquals("Rondi",r.getString("first_name"));
 		assertEquals("Hargi",r.getString("last_name"));
+	}
+	@Test
+	public void testLoadWithCache() throws ClassNotFoundException, SQLException, IOException{
+		String jdbcURL = "jdbc:sqlite:" + ResourceUtils.getAbsoluteResourcePath(TullFrameFactoryTest.class, "db/test.db");
+		Class.forName("org.sqlite.JDBC");
+		Connection c = DriverManager.getConnection(jdbcURL);
+		File cacheDirectory = Files.createTempDirectory("tull_frame_test").toFile();
+		TullFrame frame = new TullFrameFactory().fromSQL(c, "SELECT * FROM people").cachingDataAt(cacheDirectory, "test").build();
+		assertEquals("id", frame.getColumnNames().get(0));
+		assertEquals("first_name", frame.getColumnNames().get(1));
+		assertEquals("last_name", frame.getColumnNames().get(2));
+		Row r = frame.getRow(0);
+		assertEquals(1,r.getInt("id").intValue());
+		assertEquals("Rondi",r.getString("first_name"));
+		assertEquals("Hargi",r.getString("last_name"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("id").intValue());
+		assertEquals("Kroni",r.getString("first_name"));
+		assertEquals("Banthua",r.getString("last_name"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("id").intValue());
+		assertEquals("Kenaii",r.getString("first_name"));
+		assertEquals("Kruda",r.getString("last_name"));
+		
+		frame = new TullFrameFactory().fromSQL(c, "blah garbage").cachingDataAt(cacheDirectory, "test").build();
+		assertEquals("id", frame.getColumnNames().get(0));
+		assertEquals("first_name", frame.getColumnNames().get(1));
+		assertEquals("last_name", frame.getColumnNames().get(2));
+		r = frame.getRow(0);
+		assertEquals(1,r.getInt("id").intValue());
+		assertEquals("Rondi",r.getString("first_name"));
+		assertEquals("Hargi",r.getString("last_name"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("id").intValue());
+		assertEquals("Kroni",r.getString("first_name"));
+		assertEquals("Banthua",r.getString("last_name"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("id").intValue());
+		assertEquals("Kenaii",r.getString("first_name"));
+		assertEquals("Kruda",r.getString("last_name"));
+		
+		try{
+			r = frame.getRow(3);
+			fail("Getting a non-existant row didn't throw an exception!");
+		}catch(IndexOutOfBoundsException e){}
 	}
 }
