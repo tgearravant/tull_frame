@@ -188,7 +188,11 @@ public final class TullFrameFactory {
 				while(rs.next()){
 					String[] row = new String[sqlColumns];
 					for (int i = 1; i <= sqlColumns; i++){
-						row[i-1] = getSQLValueAtIndexAsString(rs, i);
+						try{
+							row[i-1] = getSQLValueAtIndexAsString(rs, i);
+						}catch (NullPointerException e){
+							row[i-1] = null;
+						}
 					}
 					frame.addRow(row);
 				}
