@@ -9,9 +9,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 
@@ -188,11 +191,7 @@ public final class TullFrameFactory {
 				while(rs.next()){
 					String[] row = new String[sqlColumns];
 					for (int i = 1; i <= sqlColumns; i++){
-						try{
-							row[i-1] = getSQLValueAtIndexAsString(rs, i);
-						}catch (NullPointerException e){
-							row[i-1] = null;
-						}
+						row[i-1] = getSQLValueAtIndexAsString(rs, i);
 					}
 					frame.addRow(row);
 				}
@@ -212,7 +211,8 @@ public final class TullFrameFactory {
 				cacheDirectory.mkdir();
 			}
 			try{
-				frame.toCsv(cacheCsv);
+				if(generateCacheCsv)
+					frame.toCsv(cacheCsv);
 				frame.serializeToFile(cacheFile);
 			}catch(IOException e){
 				e.printStackTrace();
@@ -243,20 +243,21 @@ public final class TullFrameFactory {
 	}
 	private static String getSQLValueAtIndexAsString(ResultSet rs, int index) throws SQLException{
 		ResultSetMetaData rsmd = rs.getMetaData();
+		String output;
 		if((rsmd.getColumnType(index)==Types.INTEGER) ||
 				(rsmd.getColumnType(index)==Types.SMALLINT) ||
 				(rsmd.getColumnType(index)==Types.TINYINT)){
-			return Integer.toString(rs.getInt(index));
+			output = Integer.toString(rs.getInt(index));
 		}
 		else if(rsmd.getColumnType(index)==Types.BIGINT){
-			return Long.toString(rs.getLong(index));
+			output = Long.toString(rs.getLong(index));
 		}
 		else if(rsmd.getColumnType(index)==Types.DOUBLE ||
 				rsmd.getColumnType(index)==Types.FLOAT ||
 				rsmd.getColumnType(index)==Types.DECIMAL ||
 				rsmd.getColumnType(index)==Types.NUMERIC ||
 				rsmd.getColumnType(index)==Types.REAL){
-			return Double.toString(rs.getDouble(index));
+			output =  Double.toString(rs.getDouble(index));
 		}
 		else if(rsmd.getColumnType(index)==Types.VARCHAR ||
 				rsmd.getColumnType(index)==Types.BLOB ||
@@ -264,29 +265,45 @@ public final class TullFrameFactory {
 				rsmd.getColumnType(index)==Types.LONGVARCHAR ||
 				rsmd.getColumnType(index)==Types.CHAR ||
 				rsmd.getColumnType(index)==Types.SQLXML){
-			return rs.getString(index);
+			output =  rs.getString(index);
 		}
 		else if(rsmd.getColumnType(index)==Types.BOOLEAN ||
 				rsmd.getColumnType(index)==(Types.BIT)){
-			return Boolean.toString(rs.getBoolean(index));
+			output =  Boolean.toString(rs.getBoolean(index));
 		}
 		else if(rsmd.getColumnType(index)==Types.DATE){
-			return rs.getDate(index).toLocalDate().toString();
+			Date d = rs.getDate(index);
+			if(d==null)
+				output = null;
+			else
+				output = d.toLocalDate().toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.TIME ||
 			rsmd.getColumnType(index)==Types.TIME_WITH_TIMEZONE){
-			return rs.getTime(index).toLocalTime().toString();
+			Time t = rs.getTime(index);
+			if(t==null)
+				output = null;
+			else
+				output = t.toLocalTime().toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.TIMESTAMP ||
 				rsmd.getColumnType(index)==Types.TIMESTAMP_WITH_TIMEZONE){
-			return rs.getTimestamp(index).toLocalDateTime().toString();
+			Timestamp t = rs.getTimestamp(index);
+			if(t==null)
+				output = null;
+			else
+				output = t.toLocalDateTime().toString();
+			output = rs.getTimestamp(index).toLocalDateTime().toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.OTHER && rsmd.getColumnTypeName(index).equals("jsonb")){
-			return rs.getString(index);
+			output = rs.getString(index);
 		}
 		else{
 			throw new SQLException("Coult not convert "+rsmd.getColumnTypeName(index)+".");
 		}
+		if (rs.wasNull())
+			return null;
+		return output;
 	}
 	private void setIndexes(TullFrame tf){
 		if(uniqueIndexes != null) {
