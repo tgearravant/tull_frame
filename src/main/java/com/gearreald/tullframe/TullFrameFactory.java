@@ -293,7 +293,6 @@ public final class TullFrameFactory {
 				output = null;
 			else
 				output = t.toLocalDateTime().toString();
-			output = rs.getTimestamp(index).toLocalDateTime().toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.OTHER && rsmd.getColumnTypeName(index).equals("jsonb")){
 			output = rs.getString(index);
