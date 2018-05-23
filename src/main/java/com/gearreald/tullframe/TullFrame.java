@@ -3,7 +3,6 @@ package com.gearreald.tullframe;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.nustaq.serialization.FSTObjectOutput;
 
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.columns.StringColumn;
@@ -301,7 +302,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	}
 	public void serializeToFile(File f) throws IOException{
 		try (FileOutputStream fout = new FileOutputStream(f);
-		ObjectOutputStream oos = new ObjectOutputStream(fout);){
+			FSTObjectOutput  oos = new FSTObjectOutput(fout);){
 			oos.writeObject(this);
 		}
 	}

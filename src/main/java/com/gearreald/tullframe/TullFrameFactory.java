@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -17,6 +15,9 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
+
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 
 import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
@@ -137,12 +138,13 @@ public final class TullFrameFactory {
 		}else if(copyFrame != null){
 			try{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(baos);
-				oos.writeObject(copyFrame);
-	
+				try(FSTObjectOutput oos = new FSTObjectOutput(baos)){
+					oos.writeObject(copyFrame);
+				}
 				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-				ObjectInputStream ois = new ObjectInputStream(bais);
-				frame = (TullFrame) ois.readObject();
+				try(FSTObjectInput ois = new FSTObjectInput(bais)){
+					frame = (TullFrame) ois.readObject();
+				}
 			} catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
 				frame = new TullFrame(headers, columnTypes);
@@ -318,7 +320,7 @@ public final class TullFrameFactory {
 	}
 	private TullFrame deserializeFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException{
 		try(FileInputStream fileInputStream = new FileInputStream(f);
-				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);){
+				FSTObjectInput objectInputStream = new FSTObjectInput(fileInputStream);){
 					Object object = objectInputStream.readObject();
 					return (TullFrame) object;
 				}

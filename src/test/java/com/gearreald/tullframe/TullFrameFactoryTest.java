@@ -84,6 +84,38 @@ public class TullFrameFactoryTest {
 	}
 	
 	@Test
+	public void testSerialize() throws IOException {
+		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
+		String[] headers = {"person_id", "person_first","person_last"};
+		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
+		TullFrame originalFrame = new TullFrameFactory().fromCSV(f).setColumnHeaders(headers).setColumnTypes(columnTypes).build();
+		File serialized = File.createTempFile("tull_frame_test",".jobject");
+		originalFrame.serializeToFile(serialized);
+		TullFrame frame = new TullFrameFactory().fromSerializedFile(serialized).build();
+		assertEquals(3, frame.size());
+		assertEquals("person_id", frame.getColumnNames().get(0));
+		assertEquals("person_first", frame.getColumnNames().get(1));
+		assertEquals("person_last", frame.getColumnNames().get(2));
+		Row r = frame.getRow(0);
+		assertEquals(1,r.getInt("person_id").intValue());
+		assertEquals("Rondi",r.getString("person_first"));
+		assertEquals("Hargi",r.getString("person_last"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("person_id").intValue());
+		assertEquals("Kroni",r.getString("person_first"));
+		assertEquals("Banthua",r.getString("person_last"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("person_id").intValue());
+		assertEquals("Kenaii",r.getString("person_first"));
+		assertEquals("Kruda",r.getString("person_last"));
+		try{
+			assertEquals(3,r.getInt("id").intValue());
+			fail("Didn't throw an exception on the default column name");
+		}catch(ColumnNameException e){}
+		
+	}
+	
+	@Test
 	public void testCopy() {
 		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
 		String[] headers = {"person_id", "person_first","person_last"};
