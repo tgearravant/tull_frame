@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.gearreald.tullframe.exceptions.IndexException;
 import com.gearreald.tullframe.factories.TullFrameMergeFactory;
+import com.gearreald.tullframe.interfaces.JoinCondition;
 import com.gearreald.tullframe.utils.ColumnType;
 
 import net.tullco.tullutils.ResourceUtils;
@@ -27,6 +28,37 @@ public class MergeTest {
 		merge = new TullFrameFactory().fromCSV(f2).setColumnTypes(columnTypes).build();
 	}
 
+	@Test
+	public void testJoinCondition() {
+		JoinCondition jc = (Row left, Row right) -> {
+			if(left.getInt("id").equals(right.getInt("id")))
+				return true;
+			return false;
+		};
+		TullFrame output = new TullFrameMergeFactory().byMerging(base, merge).onCondition(jc).build();
+		assertEquals(6, output.countColumns());
+		assertEquals(2, output.rowCount());
+		List<String> mergedColumns = output.getColumnNames();
+		assertEquals("id",mergedColumns.get(0));
+		assertEquals(output.getTypeOfColumn("id"), ColumnType.INTEGER);
+		assertEquals("first_name",mergedColumns.get(1));
+		assertEquals("last_name",mergedColumns.get(2));
+		assertEquals("id_1", mergedColumns.get(3));
+		assertEquals("occupation",mergedColumns.get(4));
+		assertEquals("last_name_1",mergedColumns.get(5));
+		for (Row r: output){
+			if(r.getInt("id").equals(1)){
+				assertEquals(1,r.getInt("id").intValue());
+				assertEquals("Rondi",r.getString("first_name"));
+				assertEquals("Hargi",r.getString("last_name"));
+				assertEquals("Miner",r.getString("occupation"));
+				assertEquals("Hargi",r.getString("last_name_1"));
+			}else{
+				assertEquals(3,r.getInt("id").intValue());
+			}
+		}
+	}
+	
 	@Test
 	public void testMerge() {
 		base.setUniqueIndex("id");

@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.gearreald.tullframe.Row;
 import com.gearreald.tullframe.TullFrame;
 import com.gearreald.tullframe.TullFrameFactory;
 import com.gearreald.tullframe.exceptions.TullFrameException;
+import com.gearreald.tullframe.interfaces.JoinCondition;
+import com.gearreald.tullframe.threading.MergeWorker;
 import com.gearreald.tullframe.utils.ColumnType;
+
+import net.tullco.tullutils.Pair;
 
 public class TullFrameMergeFactory {
 	
@@ -20,6 +26,9 @@ public class TullFrameMergeFactory {
 	private String baseColumn;
 	private String mergeColumn;
 	private String prefix;
+	private JoinCondition joinCondition;
+	
+	private static final int COUNT_WORKERS = 4;
 	
 	public TullFrameMergeFactory(){
 		baseFrame = null;
@@ -29,6 +38,7 @@ public class TullFrameMergeFactory {
 		baseColumn = null;
 		mergeColumn = null;
 		prefix = "";
+		joinCondition = null;
 	}
 	public TullFrameMergeFactory byConcatenating(TullFrame base, TullFrame merge){
 		concatenate = true;
@@ -41,6 +51,10 @@ public class TullFrameMergeFactory {
 	}
 	public TullFrameMergeFactory ignoreIndexes(boolean force){
 		this.force = force;
+		return this;
+	}
+	public TullFrameMergeFactory onCondition(JoinCondition jc){
+		joinCondition = jc;
 		return this;
 	}
 	public TullFrameMergeFactory onColumn(String colName){
@@ -74,11 +88,11 @@ public class TullFrameMergeFactory {
 		return null;
 	}
 	private TullFrame merge(){
-		if(baseFrame == null || mergeFrame == null || baseColumn == null)
+		if( baseFrame == null || mergeFrame == null || (baseColumn == null && joinCondition == null) )
 			throw new IllegalArgumentException("You must set the merge frames and base merge column.");
 		if(mergeColumn == null)
 			mergeColumn = baseColumn;
-		if(!baseFrame.hasColumn(baseColumn) || !mergeFrame.hasColumn(mergeColumn))
+		if(( !baseFrame.hasColumn(baseColumn) || !mergeFrame.hasColumn(mergeColumn) ) && joinCondition == null)
 			throw new TullFrameException("Both frames need to contain the merge key!");
 		
 		List<String> baseHeaders = new ArrayList<String>();
@@ -118,27 +132,65 @@ public class TullFrameMergeFactory {
 				.setColumnHeaders(newHeaders)
 				.setColumnTypes(newColumnTypes)
 				.build();
-		
-		for(Row r: baseFrame){
-			List<String> valuesToAdd = new ArrayList<String>();
-			Object mergeKey = r.getValue(baseColumn);
-			Row mergeRow = mergeFrame.lookupRowByUniqueKey(mergeKey, mergeColumn, this.force);
-			for(String newHeader: newHeaders){
-				if(newHeader.equals(mergeColumn)){
-					valuesToAdd.add(r.getString(mergeColumn));
-				}else if(baseFrame.hasColumn(newHeader)){
-					valuesToAdd.add(r.getString(newHeader));
-				}else{
-					if(mergeRow == null)
-						valuesToAdd.add(null);
-					else if(mergeRow.hasColumn(newHeader)){
-						valuesToAdd.add(mergeRow.getString(newHeader));
-					}else{
-						valuesToAdd.add(mergeRow.getString(mapOfNewHeadersToOldHeaders.get(newHeader)));
-					}
+		if(joinCondition != null){
+			Queue<Pair<Row,Row>> joinQueue = new ConcurrentLinkedQueue<Pair<Row,Row>>();
+			List<MergeWorker> workers = new ArrayList<MergeWorker>(); 
+			
+			for(int i = 0; i < COUNT_WORKERS; i++){
+				MergeWorker worker = new MergeWorker(joinQueue, newFrame, joinCondition);
+				worker.start();
+				workers.add(worker);
+			}
+			
+			for(Row br: baseFrame){
+				for(Row mr: mergeFrame){
+					joinQueue.add(Pair.<Row, Row>of(br, mr));
 				}
 			}
-			newFrame.addRow(valuesToAdd);
+			while(joinQueue.size() > 0){
+				try{
+					Thread.sleep(10);
+				}catch(InterruptedException e){}
+			}
+			for(MergeWorker worker : workers){
+				worker.noMore();
+			}
+			while(true){
+				int livingWorkers = 0;
+				for(MergeWorker worker : workers){
+					if(worker.isAlive())
+						livingWorkers++;
+				}
+				if(livingWorkers == 0){
+					break;
+				}else{
+					try{
+						Thread.sleep(10);
+					}catch(InterruptedException e){}
+				}
+			}
+		}else{
+			for(Row r: baseFrame){
+				List<String> valuesToAdd = new ArrayList<String>();
+				Object mergeKey = r.getValue(baseColumn);
+				Row mergeRow = mergeFrame.lookupRowByUniqueKey(mergeKey, mergeColumn, this.force);
+				for(String newHeader: newHeaders){
+					if(newHeader.equals(mergeColumn)){
+						valuesToAdd.add(r.getString(mergeColumn));
+					}else if(baseFrame.hasColumn(newHeader)){
+						valuesToAdd.add(r.getString(newHeader));
+					}else{
+						if(mergeRow == null)
+							valuesToAdd.add(null);
+						else if(mergeRow.hasColumn(newHeader)){
+							valuesToAdd.add(mergeRow.getString(newHeader));
+						}else{
+							valuesToAdd.add(mergeRow.getString(mapOfNewHeadersToOldHeaders.get(newHeader)));
+						}
+					}
+				}
+				newFrame.addRow(valuesToAdd);
+			}
 		}
 		
 		return newFrame;

@@ -198,7 +198,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public void addRow(List<String> valueList){
 		addRow(valueList.toArray(new String[0]));
 	}
-	public void addRow(String[] valueArray){
+	public synchronized void addRow(String[] valueArray){
 		if(valueArray.length != columns.size()){
 			throw new TullFrameException("The new row has the wrong number of elements.");
 		}
