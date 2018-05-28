@@ -3,6 +3,7 @@ package com.gearreald.tullframe;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import com.gearreald.tullframe.exceptions.ColumnNameException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 import com.gearreald.tullframe.utils.ColumnType;
 
-public class Row {
+public class Row implements Iterable<Object>{
 	private int index;
 	private TullFrame parentFrame;
 	private Map<String,Column> columns;
@@ -158,5 +159,23 @@ public class Row {
 		if (!columnNames.contains(columnName))
 			throw new ColumnNameException("The key " + columnName + " is not in the dataframe.");
 		
+	}
+	@Override
+	public Iterator<Object> iterator() {
+		Iterator<Object> i = new Iterator<Object>(){
+
+			private Iterator<String> internalIterator = columnNames.iterator();
+			@Override
+			public boolean hasNext() {
+				return internalIterator.hasNext();
+			}
+
+			@Override
+			public Object next() {
+				return getValue(internalIterator.next());
+			}
+				
+		};
+		return i;
 	}
 }
