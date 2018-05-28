@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -262,6 +263,49 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return i;
 	}
 	/**
+	 * Removes the given columns from the frame.
+	 * @param columnNames The names of the columns to remove.
+	 * @return A list of the columns that have been removed.
+	 */
+	public List<Column> removeColumns(List<String> columnNames){
+		return removeColumns(columnNames.toArray(new String[0]));
+	}
+	/**
+	 * Removes the given columns from the frame.
+	 * @param columnNames The names of the columns to remove.
+	 * @return A list of the columns that have been removed.
+	 */
+	public List<Column> removeColumns(String... columnNames){
+		List<Column> removedColumns = new ArrayList<Column>();
+		for(String columnName: columnNames){
+			removedColumns.add(removeColumn(columnName));
+		}
+		return removedColumns;
+	}
+	/**
+	 * Removes all columns except the given ones from the frame.
+	 * @param subsetColumns A list of the columns to keep.
+	 * @return A list of the columns that have been removed.
+	 */
+	public List<Column> subsetToColumns(List<String> subsetColumns){
+		List<String> removedColumns = new ArrayList<String>();
+		System.out.println(this.columnNames.toString());
+		for(String colName: this.columnNames){
+			if(!subsetColumns.contains(colName)){
+				removedColumns.add(colName);
+			}
+		}
+		return removeColumns(removedColumns);
+	}
+	/**
+	 * Removes all columns except the given ones from the frame.
+	 * @param subsetColumns The columns to keep.
+	 * @return A list of the columns that have been removed.
+	 */
+	public List<Column> subsetToColumns(String... subsetColumns) {
+		return subsetToColumns(Arrays.<String>asList(subsetColumns));
+	}
+	/**
 	 * Removes the given column from the data frame.
 	 * @param columnName The name of the column to remove.
 	 * @return The column that was removed.
@@ -285,12 +329,25 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public void removeRow(Row r){
 		removeRowAtIndex(r.getIndex());
 	}
+	/**
+	 * Gets the number of rows in the frame.
+	 * @return The number of rows in the frame.
+	 */
 	public int rowCount(){
 		return size();
 	}
+	/**
+	 * Gets the number of rows in the frame.
+	 * @return The number of rows in the frame.
+	 */
 	public int size(){
 		return indexList.size();
 	}
+	/**
+	 * Writes the contents of the frame to a CSV at the given location.
+	 * @param f The output location
+	 * @throws IOException If there was a problem writing the file.
+	 */
 	public void toCsv(File f) throws IOException{
 		try(CSVWriter writer = FileUtils.getCSVWriter(f)){
 			String[] headers = columnNames.toArray(new String[0]); 

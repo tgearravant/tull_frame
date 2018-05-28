@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.gearreald.tullframe.exceptions.BooleanParseException;
@@ -14,7 +16,9 @@ import com.gearreald.tullframe.exceptions.IndexException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
-public abstract class Column implements Serializable{
+import net.tullco.tullutils.Pair;
+
+public abstract class Column implements Serializable, Iterable<Pair<Integer, Object>>{
 
 	private static final long serialVersionUID = -8626093972148251030L;
 	protected boolean hasUniqueIndex = false;
@@ -234,10 +238,30 @@ public abstract class Column implements Serializable{
 		set(index, (value==null ? null : value.toString()));
 	}
 	
-	protected abstract Map<Integer,? extends Object> getBackingMap(); 
+	protected abstract Map<Integer,? extends Object> getBackingMap();
 	
 	public Object removeIndex(int index){
 		return getBackingMap().remove(index);
+	}
+	
+	@Override
+	public Iterator<Pair<Integer, Object>> iterator() {
+		Iterator<Pair<Integer, Object>> i = new Iterator<Pair<Integer, Object>>(){
+
+			private Iterator<? extends Entry<Integer, ? extends Object>> internalIterator = getBackingMap().entrySet().iterator();
+			@Override
+			public boolean hasNext() {
+				return internalIterator.hasNext();
+			}
+
+			@Override
+			public Pair<Integer, Object> next() {
+				Entry<Integer, ? extends Object> entry = internalIterator.next();
+				return Pair.<Integer, Object>of(entry.getKey(), entry.getValue());
+			}
+				
+		};
+		return i;
 	}
 	
 	public ColumnType inferType(){
