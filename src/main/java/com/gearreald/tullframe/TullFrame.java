@@ -30,6 +30,7 @@ import com.gearreald.tullframe.interfaces.column_adders.IntColumnAdder;
 import com.gearreald.tullframe.interfaces.column_adders.LongColumnAdder;
 import com.gearreald.tullframe.interfaces.column_adders.StringColumnAdder;
 import com.gearreald.tullframe.interfaces.column_adders.TimeColumnAdder;
+import com.gearreald.tullframe.serializers.SerializerConfiguration;
 import com.gearreald.tullframe.utils.ColumnType;
 import com.opencsv.CSVWriter;
 
@@ -359,7 +360,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	}
 	public void serializeToFile(File f) throws IOException{
 		try (FileOutputStream fout = new FileOutputStream(f);
-			FSTObjectOutput  oos = new FSTObjectOutput(fout);){
+			FSTObjectOutput  oos = SerializerConfiguration.getInstance().getObjectOutput(fout);){
 			oos.writeObject(this);
 		}
 	}

@@ -21,29 +21,37 @@ import net.tullco.tullutils.Pair;
 public abstract class Column implements Serializable, Iterable<Pair<Integer, Object>>{
 
 	private static final long serialVersionUID = -8626093972148251030L;
-	protected boolean hasUniqueIndex = false;
-	protected boolean hasLookupIndex = false;
 	protected UniqueIndex uniqueIndex;
 	protected LookupIndex lookupIndex;
 	protected static final int QUICK_TYPE_VALUES = 5;
 
 	public void createUniqueIndex(){
 		uniqueIndex = new UniqueIndex(this);
-		hasUniqueIndex = true;
 	}
 	public void createLookupIndex(){
 		lookupIndex = new LookupIndex(this);
-		hasLookupIndex = true;
+	}
+	public boolean hasUniqueIndex(){
+		if(uniqueIndex != null)
+			return true;
+		else
+			return false;
+	}
+	public boolean hasLookupIndex(){
+		if(lookupIndex != null)
+			return true;
+		else
+			return false;
 	}
 	public Integer uniqueLookup(Object o) {
 		return uniqueLookup(o, false);
 	}
 	public Integer uniqueLookup(Object o, boolean force) throws IndexException{
-		if(!hasUniqueIndex && !force)
+		if(!hasUniqueIndex() && !force)
 			throw new IndexException("The column is not indexed. Lookups will be slow and will not check for duplicates. To override, use uniqueLookup(object, true)");
-		if(hasUniqueIndex){
+		if(hasUniqueIndex()){
 			return uniqueIndex.getValuesFromIndex(o); 
-		}else if (hasLookupIndex){
+		}else if (hasLookupIndex()){
 			Set<Integer> values = lookupIndex.getValuesFromIndex(o);
 			if (values == null || values.isEmpty())
 				return null;
@@ -62,12 +70,12 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 		return valueLookup(o, true);
 	}
 	public Set<Integer> valueLookup(Object o, boolean force) throws IndexException{
-		if((!hasUniqueIndex && !hasLookupIndex) && !force){
+		if((!hasUniqueIndex() && !hasLookupIndex()) && !force){
 			throw new IndexException("The column is not indexed. Lookups will be slow. To override, use valueLookup(object, true)");
 		}
-		if(hasLookupIndex){
+		if(hasLookupIndex()){
 			return lookupIndex.getValuesFromIndex(o);
-		}else if(hasUniqueIndex){
+		}else if(hasUniqueIndex()){
 			Integer i = uniqueIndex.getValuesFromIndex(o);
 			Set<Integer> set = new HashSet<Integer>();
 			set.add(i);
@@ -168,14 +176,14 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 	}
 	
 	private void checkUniqueness(Object o){
-		if(hasUniqueIndex)
+		if(hasUniqueIndex())
 			if(uniqueIndex.getValuesFromIndex(o) != null)
 				throw new IndexException("Unique constraint violated");
 	}
 	private void addToIndices(int index, Object o){
-		if(hasUniqueIndex)
+		if(hasUniqueIndex())
 			uniqueIndex.addValuetoIndex(o, index);
-		if(hasLookupIndex)
+		if(hasLookupIndex())
 			lookupIndex.addValuetoIndex(o, index);
 	}
 	public void set(int index, Integer value){
