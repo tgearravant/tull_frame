@@ -1,7 +1,7 @@
 package com.gearreald.tullframe.columns;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 import com.gearreald.tullframe.utils.ColumnType;
@@ -9,10 +9,10 @@ import com.gearreald.tullframe.utils.ColumnType;
 public class LongColumn extends Column {
 	
 	private static final long serialVersionUID = 468609121746258096L;
-	private Map<Integer,Long> values;
+	private ArrayList<Long> values;
 	
 	public LongColumn(){
-		values = new HashMap<Integer,Long>();
+		values = new ArrayList<Long>(ORIGINAL_ARRAY_LIST_CAPACITY);
 	}
 
 	@Override
@@ -37,11 +37,12 @@ public class LongColumn extends Column {
 	}
 	@Override
 	public Object setValue(int index, Long value){
-		this.values.put(index, value);
+		assureArrayListSize(index, this.values);
+		this.values.set(index, value);
 		return value;
 	}
 	@Override
-	protected Map<Integer, ? extends Object> getBackingMap() {
+	protected List<? extends Object> getBackingList() {
 		return values;
 	}
 	@Override

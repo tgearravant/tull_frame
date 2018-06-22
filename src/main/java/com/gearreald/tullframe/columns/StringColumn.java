@@ -1,17 +1,17 @@
 package com.gearreald.tullframe.columns;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gearreald.tullframe.utils.ColumnType;
 
 public class StringColumn extends Column {
 	
 	private static final long serialVersionUID = -4258592413320365821L;
-	private Map<Integer, String> values;
+	private ArrayList<String> values;
 
 	public StringColumn(){
-		values = new HashMap<Integer, String>();
+		values = new ArrayList<String>(ORIGINAL_ARRAY_LIST_CAPACITY);
 	}
 	
 	@Override
@@ -20,12 +20,13 @@ public class StringColumn extends Column {
 	}
 	@Override
 	public Object setValue(int index, String value){
-		this.values.put(index, value);
+		assureArrayListSize(index, this.values);
+		this.values.set(index, value);
 		return value;
 	}
 
 	@Override
-	protected Map<Integer, ? extends Object> getBackingMap() {
+	protected List<? extends Object> getBackingList() {
 		return values;
 	}
 

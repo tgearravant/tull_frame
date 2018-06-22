@@ -3,6 +3,7 @@ package com.gearreald.tullframe.columns;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,10 +16,10 @@ public class LookupIndex implements Serializable{
 	protected LookupIndex(Column c){
 		lookupIndex = new HashMap<Object, Set<Integer>>();
 		nullIndices = new HashSet<Integer>();
-		Map<Integer, ? extends Object> columnValues = c.getBackingMap();
-		for (int index: columnValues.keySet()){
-			Object value = columnValues.get(index);
-			addValuetoIndex(value, index);
+		List<? extends Object> columnValues = c.getBackingList();
+		for(int i = 0; i < columnValues.size(); i++){
+			Object value = columnValues.get(i);
+			addValuetoIndex(value, i);
 		}
 	}
 	protected void addValuetoIndex(Object o, int i){
