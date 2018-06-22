@@ -21,6 +21,7 @@ import org.nustaq.serialization.FSTObjectOutput;
 
 import com.gearreald.tullframe.exceptions.TullFrameException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
+import com.gearreald.tullframe.serializers.SerializerConfiguration;
 import com.gearreald.tullframe.utils.ColumnType;
 import com.opencsv.CSVReader;
 
@@ -136,13 +137,13 @@ public final class TullFrameFactory {
 				frame = new TullFrame(headers, columnTypes);
 			}
 		}else if(copyFrame != null){
-			try{
+			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				try(FSTObjectOutput oos = new FSTObjectOutput(baos)){
+				try(FSTObjectOutput oos = SerializerConfiguration.getInstance().getObjectOutput(baos)){
 					oos.writeObject(copyFrame);
 				}
 				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-				try(FSTObjectInput ois = new FSTObjectInput(bais)){
+				try(FSTObjectInput ois = SerializerConfiguration.getInstance().getObjectInput(bais)){
 					frame = (TullFrame) ois.readObject();
 				}
 			} catch (IOException | ClassNotFoundException e) {
@@ -320,7 +321,7 @@ public final class TullFrameFactory {
 	}
 	private TullFrame deserializeFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException{
 		try(FileInputStream fileInputStream = new FileInputStream(f);
-				FSTObjectInput objectInputStream = new FSTObjectInput(fileInputStream);){
+				FSTObjectInput objectInputStream = SerializerConfiguration.getInstance().getObjectInput(fileInputStream);){
 					Object object = objectInputStream.readObject();
 					return (TullFrame) object;
 				}
