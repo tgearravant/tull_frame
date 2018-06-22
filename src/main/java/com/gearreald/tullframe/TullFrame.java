@@ -289,7 +289,6 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	 */
 	public List<Column> subsetToColumns(List<String> subsetColumns){
 		List<String> removedColumns = new ArrayList<String>();
-		System.out.println(this.columnNames.toString());
 		for(String colName: this.columnNames){
 			if(!subsetColumns.contains(colName)){
 				removedColumns.add(colName);
@@ -412,6 +411,17 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		for(String columnName: columnNames){
 			this.columns.get(columnName).removeIndex(index);
 		}
+	}
+	public void clear(){
+		for(Column c: this.columns.values()){
+			c.clear();
+		}
+		this.columnNames.clear();
+		this.columns.clear();
+		this.currentIndex = 0;
+		this.columnNames.clear();
+		this.indexList.clear();
+		this.indexSet.clear();
 	}
 	/**
 	 * @param base The frame that you want to merge columns into

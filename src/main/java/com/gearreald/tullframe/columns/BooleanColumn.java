@@ -1,7 +1,7 @@
 package com.gearreald.tullframe.columns;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gearreald.tullframe.exceptions.BooleanParseException;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
@@ -13,10 +13,10 @@ public class BooleanColumn extends Column {
 	private final static String[] POTENTIAL_TRUE_VALUES = {"true","t","1","y","yes"};
 	private final static String[] POTENTIAL_FALSE_VALUES = {"false","f","0","n","no"};
 	
-	private Map<Integer,Boolean> values;
+	private ArrayList<Boolean> values;
 
 	public BooleanColumn(){
-		values = new HashMap<Integer,Boolean>();
+		values = new ArrayList<Boolean>(ORIGINAL_ARRAY_LIST_CAPACITY);
 	}
 	@Override
 	public Boolean getBoolean(int index) {
@@ -36,11 +36,12 @@ public class BooleanColumn extends Column {
 	}
 	@Override
 	public Object setValue(int index, Boolean value){
-		this.values.put(index, value);
+		assureArrayListSize(index, this.values);
+		this.values.set(index, value);
 		return value;
 	}
 	@Override
-	protected Map<Integer, ? extends Object> getBackingMap() {
+	protected List<? extends Object> getBackingList() {
 		return values;
 	}
 	@Override
