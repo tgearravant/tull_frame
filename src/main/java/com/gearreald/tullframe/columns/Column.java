@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Set;
 
 import com.gearreald.tullframe.exceptions.BooleanParseException;
@@ -16,14 +16,17 @@ import com.gearreald.tullframe.exceptions.IndexException;
 import com.gearreald.tullframe.exceptions.UnimplementedException;
 import com.gearreald.tullframe.utils.ColumnType;
 
-import net.tullco.tullutils.Pair;
-
-public abstract class Column implements Serializable, Iterable<Pair<Integer, Object>>{
+public abstract class Column implements Serializable, Iterable<Object>{
 
 	private static final long serialVersionUID = -8626093972148251030L;
 	protected UniqueIndex uniqueIndex;
 	protected LookupIndex lookupIndex;
+	
 	protected static final int QUICK_TYPE_VALUES = 5;
+	protected static final int ORIGINAL_ARRAY_LIST_CAPACITY = 100;
+	protected static final int CAPACITY_EXPANSION_FACTOR = 3;
+	
+	protected int capacityOfList = ORIGINAL_ARRAY_LIST_CAPACITY;
 
 	public void createUniqueIndex(){
 		uniqueIndex = new UniqueIndex(this);
@@ -57,13 +60,23 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 				return null;
 			return values.iterator().next();
 		}else {
-			for(Integer i: this.getBackingMap().keySet()){
-				Object inputItem = this.getBackingMap().get(i);
+			List<? extends Object> backingList = this.getBackingList();
+			for(int i=0; i < backingList.size(); i++) {
+				Object inputItem = backingList.get(i);
 				if (o.equals(inputItem)){
 					return i;
 				}
 			}
 			return null;
+		}
+	}
+	protected void assureArrayListSize(int index, ArrayList<? extends Object> list){
+		if (capacityOfList - list.size() < 10){
+			capacityOfList *= CAPACITY_EXPANSION_FACTOR;
+			list.ensureCapacity(capacityOfList);
+		}
+		while(list.size() <= index){
+			list.add(null);
 		}
 	}
 	public Set<Integer> valueLookup(Object o){
@@ -82,8 +95,9 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 			return set;
 		}else{
 			Set<Integer> set = new HashSet<Integer>();
-			for(Integer i: this.getBackingMap().keySet()){
-				Object inputItem = this.getBackingMap().get(i);
+			List<? extends Object> backingList = this.getBackingList();
+			for(int i=0; i < backingList.size(); i++) {
+				Object inputItem = backingList.get(i);
 				if (o.equals(inputItem)){
 					set.add(i);
 				}
@@ -246,30 +260,33 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 		set(index, (value==null ? null : value.toString()));
 	}
 	
-	protected abstract Map<Integer,? extends Object> getBackingMap();
+	protected abstract List<? extends Object> getBackingList();
 	
 	public Object removeIndex(int index){
-		return getBackingMap().remove(index);
+		return getBackingList().set(index, null);
 	}
 	
 	@Override
-	public Iterator<Pair<Integer, Object>> iterator() {
-		Iterator<Pair<Integer, Object>> i = new Iterator<Pair<Integer, Object>>(){
+	public Iterator<Object> iterator() {
+		Iterator<Object> i = new Iterator<Object>(){
 
-			private Iterator<? extends Entry<Integer, ? extends Object>> internalIterator = getBackingMap().entrySet().iterator();
+			private Iterator<? extends Object> internalIterator = getBackingList().iterator();
 			@Override
 			public boolean hasNext() {
 				return internalIterator.hasNext();
 			}
 
 			@Override
-			public Pair<Integer, Object> next() {
-				Entry<Integer, ? extends Object> entry = internalIterator.next();
-				return Pair.<Integer, Object>of(entry.getKey(), entry.getValue());
+			public Object next() {
+				return internalIterator.next();
 			}
 				
 		};
 		return i;
+	}
+	
+	public void clear(){
+		this.getBackingList().clear();
 	}
 	
 	public ColumnType inferType(){
@@ -284,9 +301,9 @@ public abstract class Column implements Serializable, Iterable<Pair<Integer, Obj
 		if (this.getColumnType().equals(ColumnType.STRING))
 			return this.getColumnType();
 		
-		Map<Integer, ? extends Object> valueMap = getBackingMap();
-		for(int i: valueMap.keySet()){
-			Object o = valueMap.get(i);
+		//Map<Integer, ? extends Object> valueMap = getBackingList();
+		List<? extends Object> valueList = getBackingList();
+		for(Object o: valueList){
 			hasNonNullValues = true;
 			if (o == null){				
 				continue;

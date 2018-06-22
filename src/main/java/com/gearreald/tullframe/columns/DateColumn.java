@@ -2,19 +2,18 @@ package com.gearreald.tullframe.columns;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.List;
 import com.gearreald.tullframe.exceptions.ColumnTypeMismatchException;
 import com.gearreald.tullframe.utils.ColumnType;
 
 public class DateColumn extends Column {
 	
 	private static final long serialVersionUID = -9145953491716571136L;
-	private Map<Integer, LocalDate> values;
+	private ArrayList<LocalDate> values;
 
 	public DateColumn(){
-		values = new HashMap<Integer, LocalDate>();
+		values = new ArrayList<LocalDate>(ORIGINAL_ARRAY_LIST_CAPACITY);
 	}
 	
 	@Override
@@ -40,11 +39,12 @@ public class DateColumn extends Column {
 	}
 	@Override
 	public Object setValue(int index, LocalDate value){
-		this.values.put(index, value);
+		assureArrayListSize(index, this.values);
+		this.values.set(index, value);
 		return value;
 	}
 	@Override
-	protected Map<Integer, ? extends Object> getBackingMap() {
+	protected List<? extends Object> getBackingList() {
 		return values;
 	}
 	@Override

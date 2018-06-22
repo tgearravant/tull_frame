@@ -12,7 +12,6 @@ import org.junit.Test;
 import com.gearreald.tullframe.columns.Column;
 import com.gearreald.tullframe.utils.ColumnType;
 
-import net.tullco.tullutils.Pair;
 import net.tullco.tullutils.ResourceUtils;
 
 public class ColumnManipulationTest {
@@ -44,10 +43,10 @@ public class ColumnManipulationTest {
 		boolean hasLN = false;
 		for(Column c: removedColumns){
 			assertEquals(c.getColumnType(), ColumnType.STRING);
-			for(Pair<Integer, Object> values: c){
-				if(values.right().equals("Rondi"))
+			for(Object values: c){
+				if(values.equals("Rondi"))
 					hasFN = true;
-				if(values.right().equals("Hargi"))
+				if(values.equals("Hargi"))
 					hasLN = true;
 			}
 		}
@@ -70,10 +69,10 @@ public class ColumnManipulationTest {
 		boolean hasLN = false;
 		for(Column c: removedColumns){
 			assertEquals(c.getColumnType(), ColumnType.STRING);
-			for(Pair<Integer, Object> values: c){
-				if(values.right().equals("Rondi"))
+			for(Object values: c){
+				if(values.equals("Rondi"))
 					hasFN = true;
-				if(values.right().equals("Hargi"))
+				if(values.equals("Hargi"))
 					hasLN = true;
 			}
 		}
@@ -98,10 +97,10 @@ public class ColumnManipulationTest {
 		boolean hasLN = false;
 		for(Column c: removedColumns){
 			assertEquals(c.getColumnType(), ColumnType.STRING);
-			for(Pair<Integer, Object> values: c){
-				if(values.right().equals("Rondi"))
+			for(Object values: c){
+				if(values.equals("Rondi"))
 					hasFN = true;
-				if(values.right().equals("Hargi"))
+				if(values.equals("Hargi"))
 					hasLN = true;
 			}
 		}
@@ -124,10 +123,10 @@ public class ColumnManipulationTest {
 		boolean hasLN = false;
 		for(Column c: removedColumns){
 			assertEquals(c.getColumnType(), ColumnType.STRING);
-			for(Pair<Integer, Object> values: c){
-				if(values.right().equals("Rondi"))
+			for(Object values: c){
+				if(values.equals("Rondi"))
 					hasFN = true;
-				if(values.right().equals("Hargi"))
+				if(values.equals("Hargi"))
 					hasLN = true;
 			}
 		}
@@ -147,8 +146,8 @@ public class ColumnManipulationTest {
 		assertEquals(2, frame.countColumns());
 		boolean hasLN = false;
 		assertEquals(c.getColumnType(), ColumnType.STRING);
-		for(Pair<Integer, Object> values: c){
-			if(values.right().equals("Hargi"))
+		for(Object values: c){
+			if(values.equals("Hargi"))
 				hasLN = true;
 		}
 		assertTrue(hasLN);
