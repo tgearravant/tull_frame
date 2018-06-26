@@ -19,12 +19,13 @@ import com.gearreald.tullframe.utils.ColumnType;
 public abstract class Column implements Serializable, Iterable<Object>{
 
 	private static final long serialVersionUID = -8626093972148251030L;
-	protected UniqueIndex uniqueIndex;
-	protected LookupIndex lookupIndex;
 	
 	protected static final int QUICK_TYPE_VALUES = 5;
 	protected static final int ORIGINAL_ARRAY_LIST_CAPACITY = 100;
 	protected static final int CAPACITY_EXPANSION_FACTOR = 3;
+	
+	protected UniqueIndex uniqueIndex;
+	protected LookupIndex lookupIndex;
 	
 	protected int capacityOfList = ORIGINAL_ARRAY_LIST_CAPACITY;
 
