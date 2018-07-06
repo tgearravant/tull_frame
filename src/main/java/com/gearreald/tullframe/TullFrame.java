@@ -375,6 +375,23 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	public Row getRow(int rowNum){
 		return getRowByIndex(rowNumToIndex(rowNum));
 	}
+	/**
+	 * Returns a list containing all the values in the column, in row number order. Nulls are not included. 
+	 * @param colName
+	 * @return A independent list containing the values of the column.
+	 */
+	public List<Object> getColumnAsList(String colName){
+		if(!columns.containsKey(colName))
+			throw new ColumnNameException(String.format("The column %s is not in the dataframe", colName));
+		List<Object> valueList = new ArrayList<Object>();
+		List<Object> columnList = columns.get(colName).getColumnAsList();
+		for(Integer i: indexList){
+			if (i == null)
+				continue;
+			valueList.add(columnList.get(i));
+		}
+		return valueList;
+	}
 	protected int indexToRowNum(int index){
 		if(!indexSet.contains(index))
 			throw new TullFrameException("Somehow, you've gotten an invalid index. This is likely a bug. It's probably not your fault. This time O:)");

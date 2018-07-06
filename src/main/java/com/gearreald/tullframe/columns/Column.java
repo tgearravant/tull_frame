@@ -263,6 +263,16 @@ public abstract class Column implements Serializable, Iterable<Object>{
 	
 	protected abstract List<? extends Object> getBackingList();
 	
+	/**
+	 * Returns a list containing all the values in the column. Calling this directly is safe, but my contain extra nulls.
+	 * All values will be present.
+	 * Consider using TullFrame.getColumnAsList(String colname) instead, as it will cleanse the excess nulls.
+	 * @return A list containing all the values in the column.
+	 */
+	public List<Object> getColumnAsList(){
+		return new ArrayList<Object>(this.getBackingList());
+	}
+	
 	public Object removeIndex(int index){
 		return getBackingList().set(index, null);
 	}
