@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -292,7 +293,11 @@ public final class TullFrameFactory {
 			output =  Double.toString(rs.getDouble(index));
 		}
 		else if(rsmd.getColumnType(index)==Types.DECIMAL){
-			output = rs.getBigDecimal(index).toString();
+			BigDecimal d = rs.getBigDecimal(index);
+			if (d == null)
+				output = null;
+			else
+				output = d.toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.VARCHAR ||
 				rsmd.getColumnType(index)==Types.BLOB ||
