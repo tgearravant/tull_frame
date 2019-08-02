@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -61,6 +62,64 @@ public class TullFrameFactoryTest {
 		String[] headers = {"person_id", "person_first","person_last"};
 		ColumnType[] columnTypes = {ColumnType.INTEGER, ColumnType.STRING, ColumnType.STRING};
 		TullFrame frame = new TullFrameFactory().fromCSV(f).setColumnHeaders(headers).setColumnTypes(columnTypes).build();
+		assertEquals(3, frame.size());
+		assertEquals("person_id", frame.getColumnNames().get(0));
+		assertEquals("person_first", frame.getColumnNames().get(1));
+		assertEquals("person_last", frame.getColumnNames().get(2));
+		Row r = frame.getRow(0);
+		assertEquals(1,r.getInt("person_id").intValue());
+		assertEquals("Rondi",r.getString("person_first"));
+		assertEquals("Hargi",r.getString("person_last"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("person_id").intValue());
+		assertEquals("Kroni",r.getString("person_first"));
+		assertEquals("Banthua",r.getString("person_last"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("person_id").intValue());
+		assertEquals("Kenaii",r.getString("person_first"));
+		assertEquals("Kruda",r.getString("person_last"));
+		try{
+			assertEquals(3,r.getInt("id").intValue());
+			fail("Didn't throw an exception on the default column name");
+		}catch(ColumnNameException e){}
+	}
+	
+	@Test
+	public void testCSVLoadWithHeadersAndTypeMap() {
+		HashMap<String,ColumnType> headerMap = new HashMap<String, ColumnType>();
+		headerMap.put("person_id", ColumnType.INTEGER);
+		headerMap.put("person_first", ColumnType.STRING);
+		headerMap.put("a;sldkfja;lskdjfa", ColumnType.STRING);
+		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
+		String[] headers = {"person_id", "person_first","person_last"};
+		TullFrame frame = new TullFrameFactory().fromCSV(f).setColumnHeaders(headers).setColumnTypes(headerMap).build();
+		assertEquals(3, frame.size());
+		assertEquals("person_id", frame.getColumnNames().get(0));
+		assertEquals("person_first", frame.getColumnNames().get(1));
+		assertEquals("person_last", frame.getColumnNames().get(2));
+		Row r = frame.getRow(0);
+		assertEquals(1,r.getInt("person_id").intValue());
+		assertEquals("Rondi",r.getString("person_first"));
+		assertEquals("Hargi",r.getString("person_last"));
+		r = frame.getRow(1);
+		assertEquals(2,r.getInt("person_id").intValue());
+		assertEquals("Kroni",r.getString("person_first"));
+		assertEquals("Banthua",r.getString("person_last"));
+		r = frame.getRow(2);
+		assertEquals(3,r.getInt("person_id").intValue());
+		assertEquals("Kenaii",r.getString("person_first"));
+		assertEquals("Kruda",r.getString("person_last"));
+		try{
+			assertEquals(3,r.getInt("id").intValue());
+			fail("Didn't throw an exception on the default column name");
+		}catch(ColumnNameException e){}
+	}
+	
+	@Test
+	public void testCSVLoadWithHeadersAndInferredTypes() {
+		File f = (ResourceUtils.getResourceFile(TullFrameFactoryTest.class, "csv/testSheet.csv"));
+		String[] headers = {"person_id", "person_first","person_last"};
+		TullFrame frame = new TullFrameFactory().fromCSV(f).setColumnHeaders(headers).inferringTypes().build();
 		assertEquals(3, frame.size());
 		assertEquals("person_id", frame.getColumnNames().get(0));
 		assertEquals("person_first", frame.getColumnNames().get(1));

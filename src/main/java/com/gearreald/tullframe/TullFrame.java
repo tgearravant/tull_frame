@@ -363,6 +363,11 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			oos.writeObject(this);
 		}
 	}
+	public void inferAllColumnTypes(){
+		for(String columnName: columnNames){
+			columns.put(columnName, Column.changeColumnTypeToInferred(columns.get(columnName)));
+		}
+	}
 	protected void addColumn(String name, Column c){
 		if(columns.containsKey(name))
 			throw new ColumnNameException(String.format("The column %s already exists. Duplicate column names are not allowed.", name));
@@ -377,7 +382,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	}
 	/**
 	 * Returns a list containing all the values in the column, in row number order. Nulls are not included. 
-	 * @param colName
+	 * @param colName The name of the column to listify
 	 * @return A independent list containing the values of the column.
 	 */
 	public List<Object> getColumnAsList(String colName){

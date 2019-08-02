@@ -15,6 +15,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
@@ -32,6 +33,7 @@ public final class TullFrameFactory {
 	
 	private File csvFile;
 	private String[] headers;
+	private Map<String, ColumnType> headerTypeMap;
 	private String[] uniqueIndexes;
 	private String[] lookupIndexes;
 	private Connection conn;
@@ -42,6 +44,7 @@ public final class TullFrameFactory {
 	private File cacheDirectory;
 	private String cacheFileName;
 	private boolean generateCacheCsv;
+	private boolean inferTypes;
 
 	public TullFrameFactory(){
 		csvFile = null;
@@ -56,6 +59,8 @@ public final class TullFrameFactory {
 		cacheDirectory = null;
 		cacheFileName = null;
 		generateCacheCsv = true;
+		inferTypes = false;
+		
 	}
 	public TullFrameFactory fromCSV(File f){
 		csvFile = f;
@@ -92,6 +97,10 @@ public final class TullFrameFactory {
 		this.headers = headers;
 		return this;
 	}
+	public TullFrameFactory setColumnTypes(Map<String, ColumnType> headerTypeMap){
+		this.headerTypeMap = headerTypeMap;
+		return this;
+	}
 	public TullFrameFactory setColumnTypes(List<ColumnType> columnTypes){
 		return setColumnTypes(columnTypes.toArray(new ColumnType[0]));
 	}
@@ -111,11 +120,21 @@ public final class TullFrameFactory {
 		lookupIndexes = columnNames;
 		return this;
 	}
+	public TullFrameFactory inferringTypes(){
+		return inferringTypes(true);
+	}
+	public TullFrameFactory inferringTypes(boolean inferTypes){
+		this.inferTypes = inferTypes;
+		return this;
+	}
 	public TullFrame build() {
 		if (headers != null && columnTypes != null){
 			if (headers.length != columnTypes.length){
 				throw new TullFrameException("The headers and the column types don't match up.");
 			}
+		}
+		if (headers != null && columnTypes == null && headerTypeMap != null){
+			columnTypes = getColumnTypeArray(headers, headerTypeMap);
 		}
 		
 		if (cacheDirectory != null && cacheFileName != null){
@@ -155,9 +174,13 @@ public final class TullFrameFactory {
 				String[] headerRow = reader.readNext();
 				headers = (headers == null?headerRow:headers);
 				if (columnTypes == null){
-					columnTypes = new ColumnType[headers.length];
-					for(int i=0; i< columnTypes.length; i++){
-						columnTypes[i] = ColumnType.STRING;
+					if(headerTypeMap != null) {
+						columnTypes = getColumnTypeArray(headers, headerTypeMap);
+					}else{
+						columnTypes = new ColumnType[headers.length];
+						for(int i=0; i< columnTypes.length; i++){
+							columnTypes[i] = ColumnType.STRING;
+						}
 					}
 				}
 				frame = new TullFrame(headers, columnTypes);
@@ -188,7 +211,11 @@ public final class TullFrameFactory {
 				if(headers == null)
 					headers = sqlHeaders;
 				if(columnTypes == null)
-					columnTypes = sqlColumnTypes;
+					if(headerTypeMap != null) {
+						columnTypes = getColumnTypeArray(headers, headerTypeMap);
+					}else{
+						columnTypes = sqlColumnTypes;
+					}
 				frame = new TullFrame(headers, columnTypes);
 				setIndexes(frame);
 				while(rs.next()){
@@ -207,6 +234,10 @@ public final class TullFrameFactory {
 			setIndexes(frame);
 		}
 		
+		if (inferTypes){
+			frame.inferAllColumnTypes();
+		}
+		
 		if (cacheDirectory != null && cacheFileName != null){
 			File cacheFile = new File(cacheDirectory, cacheFileName + ".jobject");
 			File cacheCsv = new File(cacheDirectory, cacheFileName + ".csv");
@@ -221,7 +252,6 @@ public final class TullFrameFactory {
 				e.printStackTrace();
 			}
 		}
-		
 		return frame;
 	}
 	private static ColumnType getColumnTypeFromSQLType(int sqlType, String sqlTypeName){
@@ -257,10 +287,12 @@ public final class TullFrameFactory {
 		}
 		else if(rsmd.getColumnType(index)==Types.DOUBLE ||
 				rsmd.getColumnType(index)==Types.FLOAT ||
-				rsmd.getColumnType(index)==Types.DECIMAL ||
 				rsmd.getColumnType(index)==Types.NUMERIC ||
 				rsmd.getColumnType(index)==Types.REAL){
 			output =  Double.toString(rs.getDouble(index));
+		}
+		else if(rsmd.getColumnType(index)==Types.DECIMAL){
+			output = rs.getBigDecimal(index).toString();
 		}
 		else if(rsmd.getColumnType(index)==Types.VARCHAR ||
 				rsmd.getColumnType(index)==Types.BLOB ||
@@ -325,5 +357,14 @@ public final class TullFrameFactory {
 					Object object = objectInputStream.readObject();
 					return (TullFrame) object;
 				}
+	}
+	private ColumnType[] getColumnTypeArray(String[] headers, Map<String, ColumnType> typeMap){
+		ColumnType[] columnTypes = new ColumnType[headers.length];
+		for (int i=0; i<headers.length; i++) {
+			String header = headers[i];
+			ColumnType type = (typeMap.containsKey(header) ? typeMap.get(header) : ColumnType.STRING);
+			columnTypes[i] = type;
+		}
+		return columnTypes;
 	}
 }

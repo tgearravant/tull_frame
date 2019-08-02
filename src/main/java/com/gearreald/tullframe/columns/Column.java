@@ -300,6 +300,22 @@ public abstract class Column implements Serializable, Iterable<Object>{
 		this.getBackingList().clear();
 	}
 	
+	public static Column changeColumnTypeToInferred(Column c){
+		return changeColumnType(c, c.inferType());
+	}
+	
+	public static Column changeColumnType(Column c, ColumnType ct) {
+		if (c.getColumnType() == ct)
+			return c;
+		Column newCol = Column.getColumnFromColumnType(ct);
+		List<? extends Object> values = c.getBackingList();
+		for (int i = 0; i < values.size(); i++){
+			Object value = values.get(i);
+			newCol.set(i, value);
+		}
+		return newCol;
+	}
+	
 	public ColumnType inferType(){
 		boolean isBool = true;
 		boolean isDate = true;
@@ -309,13 +325,9 @@ public abstract class Column implements Serializable, Iterable<Object>{
 		boolean isDouble = true;
 		boolean hasNonNullValues = false;
 		
-		if (this.getColumnType().equals(ColumnType.STRING))
-			return this.getColumnType();
-		
 		//Map<Integer, ? extends Object> valueMap = getBackingList();
 		List<? extends Object> valueList = getBackingList();
 		for(Object o: valueList){
-			hasNonNullValues = true;
 			if (o == null){				
 				continue;
 			}
