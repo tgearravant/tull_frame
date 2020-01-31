@@ -270,10 +270,10 @@ public final class TullFrameFactory {
 			return ColumnType.TIME;
 		else if(sqlType == 16 || sqlType == -7)
 			return ColumnType.BOOLEAN;
-		else if(sqlType == 1111 && sqlTypeName.equals("jsonb"))
+		else if((sqlType == 1111 && sqlTypeName.equals("jsonb")) || (sqlType == 2000 && sqlTypeName.equals("JSON")))
 			return ColumnType.STRING;
 		else
-			throw new UnimplementedException(String.format("The datatype %d is not supported", sqlType));
+			throw new UnimplementedException(String.format("The datatype %d (%s) is not supported", sqlType, sqlTypeName));
 	}
 	private static String getSQLValueAtIndexAsString(ResultSet rs, int index) throws SQLException{
 		ResultSetMetaData rsmd = rs.getMetaData();
@@ -334,11 +334,11 @@ public final class TullFrameFactory {
 			else
 				output = t.toLocalDateTime().toString();
 		}
-		else if(rsmd.getColumnType(index)==Types.OTHER && rsmd.getColumnTypeName(index).equals("jsonb")){
+		else if((rsmd.getColumnType(index)==Types.OTHER && rsmd.getColumnTypeName(index).equals("jsonb")) || (rsmd.getColumnType(index)==Types.JAVA_OBJECT && rsmd.getColumnTypeName(index).equals("JSON"))){
 			output = rs.getString(index);
 		}
 		else{
-			throw new SQLException("Coult not convert "+rsmd.getColumnTypeName(index)+".");
+			throw new SQLException("Coult not convert "+rsmd.getColumnTypeName(index)+" with name " + rsmd.getColumnName(index) + ".");
 		}
 		if (rs.wasNull())
 			return null;

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import com.gearreald.tullframe.interfaces.column_adders.StringColumnAdder;
 import com.gearreald.tullframe.interfaces.column_adders.TimeColumnAdder;
 import com.gearreald.tullframe.serializers.SerializerConfiguration;
 import com.gearreald.tullframe.utils.ColumnType;
+import com.gearreald.tullframe.utils.HashList;
 import com.opencsv.CSVWriter;
 
 import net.tullco.tullutils.FileUtils;
@@ -41,16 +43,14 @@ public class TullFrame implements Iterable<Row>, Serializable {
 	private Map<String, Column> columns;
 	private List<String> columnNames;
 	private int currentIndex;
-	private List<Integer> indexList;
-	private Set<Integer> indexSet;
+	private HashList<Integer> indexList;
 	private static final long serialVersionUID = 5681357572939610351L;
 	
 	protected TullFrame(String[] headers, ColumnType[] columnTypes){
 		columns = new HashMap<String, Column>();
 		columnNames = new ArrayList<String>();
-		indexSet = new HashSet<Integer>();
 		currentIndex = 0;
-		indexList = new ArrayList<Integer>();
+		indexList = new HashList<Integer>();
 		if(headers!= null){
 			for(int i = 0; i < headers.length; i++){
 				addEmptyColumn(headers[i], columnTypes[i]);
@@ -209,7 +209,6 @@ public class TullFrame implements Iterable<Row>, Serializable {
 			col.set(currentIndex,valueArray[i]);
 		}
 		indexList.add(currentIndex);
-		indexSet.add(currentIndex);
 		currentIndex++;
 		
 	}
@@ -217,20 +216,18 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return columns.size();
 	}
 	public void filterRows(Filter... filters){
-		List<Integer> indexesToRemove = new ArrayList<Integer>();
+		List<Integer> indexesToRemove = new LinkedList<Integer>();
 		for(Row r: this){
 			for(Filter f: filters){
 				try{
 					if(!f.condition(r))
-						indexesToRemove.add(r.getIndex());
+						indexesToRemove.add(r.getRowNumber());
 				}catch(NullPointerException e){
-					indexesToRemove.add(r.getIndex());
+					indexesToRemove.add(r.getRowNumber());
 				}
 			}
 		}
-		for(int i: indexesToRemove){
-			this.removeRowAtIndex(i);
-		}
+		indexList.removeAllAtIndices(indexesToRemove);
 	}
 	public Column getColumn(String columnName){
 		return this.columns.get(columnName);
@@ -398,9 +395,10 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return valueList;
 	}
 	protected int indexToRowNum(int index){
-		if(!indexSet.contains(index))
+		int indexOf = indexList.indexOf(index);
+		if(indexOf == -1)
 			throw new TullFrameException("Somehow, you've gotten an invalid index. This is likely a bug. It's probably not your fault. This time O:)");
-		return indexList.indexOf(index);
+		return indexOf;
 	}
 	protected void initializeStringColumns(String[] names){
 		columns.clear();
@@ -429,8 +427,7 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		return this.indexList.get(rowNum);
 	}
 	private void removeRowAtIndex(int index){
-		this.indexList.remove(indexList.indexOf(index));
-		this.indexSet.remove(index);
+		this.indexList.remove(new Integer(index));
 		for(String columnName: columnNames){
 			this.columns.get(columnName).removeIndex(index);
 		}
@@ -444,7 +441,6 @@ public class TullFrame implements Iterable<Row>, Serializable {
 		this.currentIndex = 0;
 		this.columnNames.clear();
 		this.indexList.clear();
-		this.indexSet.clear();
 	}
 	/**
 	 * @param base The frame that you want to merge columns into

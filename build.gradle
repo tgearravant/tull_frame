@@ -30,7 +30,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.gearreald'
             artifactId 'TullFrame'
-            version '1.1.0.8'
+            version '1.1.1.0'
 
             from components.java
             artifact sourcesJar
@@ -45,11 +45,11 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'net.tullco:TullUtils:0.17.0'
-    implementation 'de.ruedigermoeller:fst:2.56'
+    implementation 'de.ruedigermoeller:fst:2.57'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.xerial:sqlite-jdbc:3.21.0.1'
+    testImplementation 'org.xerial:sqlite-jdbc:3.28.0'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
